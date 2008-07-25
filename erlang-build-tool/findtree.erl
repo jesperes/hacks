@@ -14,7 +14,8 @@ find(Dir, Exclude) ->
 			   {match, [{_,_}]} ->
 			       AccIn;
 			   _ ->
-			       [F|AccIn] 
+			       [F|AccIn]
 		       end
 	       end,
 	       []).
+ 

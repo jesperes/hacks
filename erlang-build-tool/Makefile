@@ -1,13 +1,21 @@
-MODS= findtree ebt ebt_server inotify
+MODS= $(wildcard *.erl)
 ERL= erl
-ERLC= erlc
+ERLC= erlc -W -v +debug_info
+
+CFLAGS=-g -Wall -Werror
 
 .SUFFIXES: .erl .beam 
 %.beam: %.erl
-	$(ERLC) -W $<
+	$(ERLC) $<
 
 all: compile
-compile: $(MODS:%=%.beam)
+compile: $(MODS:%.erl=%.beam) inotify
+
+%.o: %.c
+	$(CC) $(CFLAGS) $< -c -o $@
+
+inotify: inotify.o
+	$(CC) $(CFLAGS) $< -o $@
 
 clean:
 	$(RM) *.beam *~ *.dump
