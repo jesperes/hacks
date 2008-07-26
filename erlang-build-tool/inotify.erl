@@ -24,7 +24,6 @@ loop(Port) ->
 	    loop(Port)
     end.
 
-   
 
     
 				   
