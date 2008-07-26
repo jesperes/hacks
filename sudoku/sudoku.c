@@ -196,11 +196,6 @@ main(int argc, char *argv[])
   }
 
   t0 = clock() - t0;
-#ifdef __GNUC__
-  printf("GCC version: %s\n", __VERSION__);
-#elif _MSC_VER
-  printf("MSVC: 0x%x\n", _MSC_VER);
-#endif
   printf("Time: %g secs\n", ((double)t0)/CLOCKS_PER_SEC);
 
   pretty_print(p);

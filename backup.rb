@@ -7,13 +7,7 @@ require 'rmail'
 include FileUtils
 include FileTest
 
-fasttest = false
-
-if fasttest
-  BACKUPDIR = "g:/backup-test"
-else
-  BACKUPDIR = "g:/"
-end
+BACKUPDIR = "g:/"
 SMTP_SERVERS = ["exchange.iar.se", "mailout.comhem.se"]
 MAILFROM = "jesper@eskilson.se"
 MAILTO = "jesper@eskilson.se"
@@ -39,16 +33,10 @@ rsync_opts = [
   "--backup-dir=#{incrdir}"
 ]
 
-if fasttest
-  sources = [
-    "E:/hacks"
-  ]
-else
-  sources = [
-    "C:/Documents and Settings/Jesper",
-    "E:/"
-  ]
-end
+sources = [
+  "C:/Documents and Settings/Jesper",
+  "E:/"
+]
 
 exclude = [
   "NTUSER.DAT",
