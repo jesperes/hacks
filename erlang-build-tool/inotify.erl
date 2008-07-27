@@ -21,6 +21,9 @@
 
 -record(state, {}).
 
+p(X) ->
+    erlang:display(X).
+
 %%====================================================================
 %% API
 %%====================================================================
@@ -49,6 +52,55 @@ start_link() ->
 init([]) ->
     {ok, #state{}}.
 
+kill_external_process(Pid) ->
+    io:format("Killing process: ~p~n", [Pid]),
+    os:cmd("kill -9 " ++ Pid).
+
+%% Spawns an inotifywait process, and pass Port and Pid (of the external
+%% inotifywait process) to InotifyHandler.
+spawn_inotify_process(Dir, InotifyHandler) ->
+    Cmd = "/bin/sh -c 'echo $$ ; exec inotifywait -q -r -m " ++ Dir ++ "'",
+    spawn_link(
+      fun() ->
+	      process_flag(trap_exit, true),
+	      Port = open_port({spawn, Cmd},
+			       [{line, 1024}]),
+	      receive
+		  {Port, {data, {eol, Pid}}} ->
+		      InotifyHandler(Port, Pid)
+	      end
+      end).
+
+%% Converts inotifywait output lines to messages to send back to client
+convert_inotify_message(Data) ->
+    case regexp:split(Data, " ") of
+	{ok, [Dir, Events, File]} ->
+	    {ok, EventList} = regexp:split(Events, ","),
+	    AtomEventList = lists:map(fun list_to_atom/1,
+				      lists:map(fun string:to_lower/1, 
+						EventList)),
+	    {Dir, File, AtomEventList};
+	X ->
+	    throw({inotify, unknown, X})
+    end.
+
+%% Receives events from the inotify port, and translates them into
+%% messages to the process who sent the {monitor_dir, _} message.
+inotify_loop(Port, Pid, From) ->
+    %% p({inotify_loop, Port, Pid, From}),
+    receive
+	{_, {data, {eol, Data}}} ->
+	    {Client, _} = From,
+	    Client ! convert_inotify_message(Data),
+	    inotify_loop(Port, Pid, From);
+	{'EXIT', _, _} ->
+	    io:format("Closing port: ~p~n", [Port]),
+	    port_close(Port),
+	    kill_external_process(Pid);
+	X ->
+	    throw({inotify, port, X})
+    end.
+
 %%--------------------------------------------------------------------
 %% Function: %% handle_call(Request, From, State) -> {reply, Reply, State} |
 %%                                      {reply, Reply, State, Timeout} |
@@ -60,41 +112,12 @@ init([]) ->
 %%--------------------------------------------------------------------
 handle_call({monitor_dir, Dir}, From, State) ->
     Reply = ok,
-    Parent = self(),
-    Cmd = "inotifywait -q -m -r ",
-    spawn_link(fun() ->
-		       process_flag(trap_exit, true),
-		       Port = open_port({spawn, Cmd ++ Dir},
-					[{line, 1024}]),
-		       loop_porthandler(Port, Parent, From)
-	       end),
+    spawn_inotify_process(Dir,
+      fun(Port, Pid) ->
+	      inotify_loop(Port, Pid, From)
+      end),
     {reply, Reply, State}.
 
-%% Receives events from the inotify port, and translates them into
-%% messages to the process who sent the {monitor_dir, _} message.
-loop_porthandler(Port, Parent, From) ->
-    receive
-	{Port, {data, {eol, Data}}} ->
-	    case regexp:split(Data, " ") of
-		{ok, [Dir, Events, File]} ->
-		    {ok, EventList} = regexp:split(Events, ","),
-		    AtomEventList = lists:map(fun list_to_atom/1,
-					      lists:map(fun string:to_lower/1, 
-							EventList)),
-		    Reply = {Dir, File, AtomEventList},
-		    {Origin, _} = From,
-		    Origin ! Reply,
-		    loop_porthandler(Port, Parent, From);
-		X ->
-		    io:format("Unexpected match result from inotify process: ~p~n", [X])
-	    end;
-	{'EXIT', _, _} ->
-	    io:format("Closing port: ~p~n", [Port]),
-	    port_close(Port);
-	X ->
-	    io:format("Unexpected from inotify process: ~p~n", [X]),
-	    loop_porthandler(Port, Parent, From)
-    end.
 
 %%--------------------------------------------------------------------
 %% Function: handle_cast(Msg, State) -> {noreply, State} |
@@ -121,9 +144,9 @@ handle_info(_Info, State) ->
 %% cleaning up. When it returns, the gen_server terminates with Reason.
 %% The return value is ignored.
 %%--------------------------------------------------------------------
-terminate(Reason, _State) ->
-    erlang:display(Reason),
+terminate(_Reason, _State) ->
     ok.
+
 
 %%--------------------------------------------------------------------
 %% Func: code_change(OldVsn, State, Extra) -> {ok, NewState}
@@ -140,21 +163,14 @@ test() ->
     {ok, Pid} = start_link(),
     monitor_dir("/etc"),
     test_loop(10),
-    exit(Pid, stop),
+    exit(Pid, foo),
     init:stop().
 
+test_loop(0) ->
+    [];
 test_loop(Msgs) ->
-    if Msgs > 0 ->
-	    receive
-		X ->
-		    erlang:display(X),
-		    test_loop(Msgs - 1)
-	    end;
-       true ->
-	    []
+    receive
+	X ->
+	    p(X),
+	    test_loop(Msgs - 1)
     end.
-
-	   
-    
-
-	  
