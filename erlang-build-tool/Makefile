@@ -1,4 +1,4 @@
-MODS= findtree ebt ebt_server inotify
+MODS= $(wildcard *.erl)
 ERL= erl
 ERLC= erlc
 
@@ -7,7 +7,7 @@ ERLC= erlc
 	$(ERLC) -W $<
 
 all: compile
-compile: $(MODS:%=%.beam)
+compile: $(MODS:%.erl=%.beam)
 
 clean:
 	$(RM) *.beam *~ *.dump
