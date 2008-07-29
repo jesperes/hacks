@@ -1,0 +1,6 @@
+*.beam
+*~
+*.o
+*.exe
+erl_crash.dump
+*.exe.stackdump
