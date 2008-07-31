@@ -1,4 +1,7 @@
+#ifdef _WIN32
 #include <windows.h>
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
@@ -22,6 +25,16 @@ void watch_directory(char *d)
     switch (result) {
     case WAIT_OBJECT_0:
       printf("Directory '%s' changed.\n", d);
+      
+      FILE_NOTIFY_INFORMATION fni;
+      DWORD bytes_read;
+
+      result = ReadDirectoryChangesW(handles[0], &fni, sizeof(fni), 
+                                     TRUE, -1, &bytes_read, 
+                                     NULL, NULL);
+
+      assert(result != 0);
+
       FindNextChangeNotification(handles[0]);
       break;
     }
