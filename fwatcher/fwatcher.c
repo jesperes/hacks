@@ -6,7 +6,8 @@
 #include <stdio.h>
 #include <assert.h>
 
-void watch_directory(char *d) 
+#ifdef _WIN32
+void win32_watch_directory(char *d) 
 {
   HANDLE handles[1];
 
@@ -40,6 +41,7 @@ void watch_directory(char *d)
     }
   }
 }
+#endif
 
 int main(int argc, char *argv[]) 
 {
@@ -47,7 +49,9 @@ int main(int argc, char *argv[])
     printf("Usage: %s <dir>\n", argv[0]);
   }
 
-  watch_directory(argv[1]);
+#ifdef _WIN32  
+  win32_watch_directory(argv[1]);
+#endif
   return 0;
 }
 
