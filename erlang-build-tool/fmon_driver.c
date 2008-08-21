@@ -5,6 +5,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#ifdef unix
+#include <pthread.h>
+#endif
 
 #ifdef _WIN32
 void win32_watch_directory(char *d) 
@@ -42,6 +45,11 @@ void win32_watch_directory(char *d)
   }
 }
 #endif
+
+void *stdin_reader(void *arg)
+{
+  return NULL;
+}
 
 int main(int argc, char *argv[]) 
 {

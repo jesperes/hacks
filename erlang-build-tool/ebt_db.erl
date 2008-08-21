@@ -1,8 +1,8 @@
 -module(ebt_db).
--compile(export_all).
+-export([start/0]).
 
 -record(file, 
-	{name, 				     %% relative name within tree
+	{name, 				     %% filename
 	 sha1sum,			     %% file checksum
 	 last_checked,			     %% time of last check
 	 mtime,				     %% last modification time of file
@@ -37,10 +37,6 @@ create_table(TableName) ->
 	    throw(Error)
     end.
 
-
-remove_filename_prefix(Prefix, Filename) ->
-    string:substr(Filename, length(Prefix)+2).
-
 start() ->
     mnesia:stop(),
     crypto:start(),
@@ -57,9 +53,50 @@ start() ->
     end,
     spawn(fun() -> loop() end).
 
+make_file_record(Path) ->
+    {ok, Binary} = file:read_file(Path),
+    #file{name = Path,
+	  last_checked = now(),
+	  mtime = filelib:last_modified(Path),
+	  contents = Binary}.
+    
+write_file_record(Path) ->
+    mnesia:write(make_file_record(Path)).
+
+update_file_trans(Path) ->
+    case mnesia:read({file, Path}) of
+	[] ->
+	    io:format("File missing from db, adding: ~p~n", [Path]),
+	    write_file_record(Path);
+	[FileRecord] ->
+	    Mtime = filelib:last_modified(Path),
+	    if Mtime > FileRecord#file.mtime ->
+		    %% File has been modified
+		    io:format("File has changed on disk, updating: ~p (~p bytes)~n", 
+			      [Path, filelib:file_size(Path)]),
+		    write_file_record(Path);
+	       true ->
+		    %% File is unchanged
+		    %% io:format("File is unchanged: ~p~n", [Path])
+		    []
+	    end
+    end.
+
+update_file(Path) ->
+    mnesia:transaction(
+      fun() -> 
+	      update_file_trans(Path)
+      end).
+
 
 loop() ->
     receive
+	{exists, Path} ->
+	    update_file(Path),
+	    loop();
+	{changed, Path} ->
+	    update_file(Path),
+	    loop();
 	X ->
 	    erlang:display(X),
 	    loop()

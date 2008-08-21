@@ -10,9 +10,6 @@ ifeq ($(NO_CYGWIN),yes)
 endif
 endif
 
-ALL_CFLAGS= $(CFLAGS)
-ALL_LDFLAGS= $(LDFLAGS)
-
 MODS= $(wildcard *.erl)
 ERL= erl
 ERLC= erlc -W -v +debug_info
@@ -22,13 +19,13 @@ ERLC= erlc -W -v +debug_info
 	$(ERLC) $<
 
 all: compile
-compile: $(MODS:%.erl=%.beam) inotify
+compile: $(MODS:%.erl=%.beam) fmon_driver
 
 %.o: %.c
-	$(CC) $(ALL_CFLAGS) $< -c -o $@
+	$(CC) $(CFLAGS) $< -c -o $@
 
-inotify: inotify.o
-	$(CC) $(ALL_CFLAGS) $(ALL_LDFLAGS) $< -o $@
+fmon_driver: fmon_driver.o
+	$(CC) $(CFLAGS) $(ALL_LDFLAGS) $< -o $@
 
 clean:
 	$(RM) *.beam *~ *.dump *.o *.exe
