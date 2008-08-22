@@ -14,6 +14,7 @@ start([SrcDir|_]) ->
     file_monitor:start(),
     St = #state{db = Db},
     spawn(fun() ->
+		  register(ebt_server, self()),
 		  monitor_tree(self()),
 		  main(St) 
 	  end).
@@ -52,14 +53,21 @@ monitor_tree(Receiver) ->
 
 main(St) ->
     receive
+	{getpid, From} ->
+	    From ! {pid, self()},
+	    main(St);
 	{file_monitor, _Ref, {exists, Path, _Type, _FileInfo, _}} ->
 	    St#state.db ! {exists, Path},
 	    main(St);
 	{file_monitor, _Ref, {changed, Path, _Type, _FileInfo, _}} ->
 	    St#state.db ! {changed, Path},
 	    main(St);
-	{file_monitor, _Ref, {error, _Path, _Type, _Info}} ->
-	    %% erlang:display({error, Path}),
+	{file_monitor, _Ref, {error, Path, _Type, _Info}} ->
+	    erlang:display({error, Path}),
+	    main(St);
+	{add_table_copy, Node, From} ->
+	    erlang:display({add_table_copy, Node, From}),
+	    St#state.db ! {add_table_copy, Node, From},
 	    main(St);
 	X ->
 	    erlang:display({unknown, X}),
