@@ -1,5 +1,4 @@
 #!/bin/bash
 
-(cd $(dirname $0); make -j)
-# echo "$@"
-exec erl -noinput -s ebt main -- "$@" --
+SRCDIR=$(cd $(dirname $0); pwd)
+exec erl -name ebt_server -pa $SRCDIR -run ebt_server start "$1"
