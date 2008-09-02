@@ -6,9 +6,10 @@
 	  srcdir,
 	  files = [],
 	  clients = [],
+	  source_config_file,
 	  source_config_mod,
 	  last_build = never,
-	  pending_build = false
+	  pending_build = true
 	  }).
 
 %%% Public API
@@ -29,8 +30,10 @@ start([SrcDir|_]) ->
 		  register(ebt_server, self()),
 		  St = #state{ 
 		    source_config_mod = SrcConfigMod,
+		    source_config_file = File,
 		    srcdir = SrcDirAbs },
 		  monitor_tree(self(), St),
+		  process_flag(trap_exit, true),
 		  main(St) 
 	  end).
 
@@ -80,11 +83,20 @@ load_default_source_config_module() ->
 
 load_source_config_module(SrcDir) ->
     File = get_source_file(SrcDir, "ebt_config.erl"),
-    case c:c(File, {outdir, SrcDir}) of
+    case c:c(File, [{outdir, SrcDir}]) of
 	{ok, Module} ->
 	    {Module, File};
 	_ ->
 	    load_default_source_config_module()
+    end.
+
+reload_source_config(St) ->
+    %% io:format("Reloading source config.~n", []),
+    case c:c(St#state.source_config_file, {outdir, St#state.srcdir}) of
+	{ok, _} ->
+	    true;
+	X ->
+	    io:format("Failed to reload source config: ~p~n", [X])
     end.
 
 time_call(Fun, ResFun) ->
@@ -106,9 +118,11 @@ get_monitored_files(Dir, St) ->
 			{Files, Num, NumExcl + 1}
 		end
 	end,
-    filelib:fold_files(Dir, ".*", true, F, {[], 0, 0}).
+    file:set_cwd(Dir),
+    filelib:fold_files(".", ".*", true, F, {[], 0, 0}).
 
 monitor_file_or_dir(Node, Receiver) ->
+    %% io:format("Monitoring: ~p~n", [Node]),
     IsDir = filelib:is_dir(Node),
     if IsDir ->
 	    file_monitor:monitor_dir(Node, Receiver);
@@ -142,6 +156,7 @@ build_dir(St, SystemType) ->
     Mod:build_dir(SystemType).
 
 get_build_message(St, SystemType) ->
+    reload_source_config(St),
     case automatic_build(St, SystemType) of
 	true ->
 	    {build, build_command(St, SystemType), build_dir(St, SystemType)};
@@ -183,6 +198,7 @@ add_client(Pid, SystemType, St) ->
     io:format("Registering client ~p (~p) at ~p~n", [Pid, SystemType, node(Pid)]),
     time_call(
       fun() ->
+	      link(Pid),
 	      Pid ! {ebt_server, self()},
 	      send_filelist_to_client(Pid, St),
 	      Pid ! fileinfo_complete
@@ -191,14 +207,15 @@ add_client(Pid, SystemType, St) ->
 	      io:format("Sent file info to ~p (~g seconds)~n",
 			[Pid, Time/1000])
       end),
-    St#state{ clients = [{Pid, SystemType}|St#state.clients]}.
+    St#state{ clients = [{Pid, SystemType}|St#state.clients],
+	      pending_build = true }.
 
 
 diff_time(A, B) ->
     {A1, A2, A3} = A,
     {B1, B2, B3} = B,
     {A1 - B1, A2 - B2, A3 - B3}.
-    
+
 trigger_build(St) ->
     case St#state.last_build of
 	never ->
@@ -211,7 +228,7 @@ trigger_build(St) ->
 		    true
 	    end
     end.
-    
+
 
 trigger_build([], _) ->
     true;
@@ -224,7 +241,48 @@ trigger_build([{Pid, SystemType}|Clients], St) ->
 	    io:format("Missing method in source config module: ~p~n", [Fun])
     end,
     trigger_build(Clients, St).
+
+
+get_client(Pid, St) ->
+    get_client0(St#state.clients, Pid).
+
+get_client0([], _) ->
+    false;
+get_client0([{Pid, _} = Client|_], Pid) ->
+    Client;
+get_client0([_|Clients], Pid) ->
+    get_client0(Clients, Pid).
+
+
+remove_client(Pid, St) ->
+    St#state{clients = 
+	     lists:filter(
+	       fun(Client) ->
+		       {Pid0, _} = Client,
+		       Pid0 /= Pid
+	       end, St#state.clients)}.
+
+handle_client_exit(Pid, St) ->
+    NumClients = length(St#state.clients),
+    St0 = remove_client(Pid, St),
+    NumClients0 = length(St0#state.clients),
     
+    if NumClients == NumClients0 ->
+	    true;
+       NumClients0 == 0 ->
+	    io:format("No clients left.~n", []);
+       true ->
+	    io:format("Detected client exit. Remaining clients:~n", []),
+	    lists:foreach(
+	      fun(Client) ->
+		      {Pid0, SystemType} = Client,
+		      io:format("Client ~p (system type ~p)~n",
+				[Pid0, SystemType])
+	      end,
+	      St0#state.clients)
+    end,
+    St0.
+
 main(St) ->
     receive
 	%% Register new client
@@ -233,11 +291,10 @@ main(St) ->
 
 	%% Request file contents
 	{get_file, Client, Path} ->
-	    io:format("Sending file to client ~p (~p): ~p~n", 
-		      [Client, node(Client), Path]),
+	    %% io:format("Sending file to client ~p (~p): ~p~n", [Client, node(Client), Path]),
 	    send_file_to_client(St#state.files, Client, Path),
 	    main(St);
-	
+
 	%% Messages received from the file_monitor service
 	{file_monitor, _Ref, {exists, Path, Type, FileInfo, _}} ->
 	    Files = St#state.files,
@@ -249,19 +306,39 @@ main(St) ->
 		  });
 
 	{file_monitor, _Ref, {changed, Path, Type, FileInfo, _}} ->
+	    io:format("Changed: ~w~n", [Path]),
 	    broadcast_filechange(St#state.clients, Path, Type, FileInfo, St),
 	    main(St#state{
 		   last_build = erlang:now(),
 		   pending_build = true
 		  });
+
 	{file_monitor, _Ref, {error, Path, _Type, _Info}} ->
 	    erlang:display({file_monitor, error, Path}),
 	    main(St);
 
+	%% Recevied when a client completes a build
+	{build_complete, Pid, Status} ->
+	    {_, SystemType} = get_client(Pid, St),
+	    if Status == 0 ->
+		    io:format("Build completed successfully by ~p (~p)~n", [Pid, SystemType]);
+	       true ->
+		    io:format("Build failed on ~p (~p)~n", [Pid, SystemType])
+	    end,
+	    main(St);
+
+	{'EXIT', Pid, _} ->
+	    main(handle_client_exit(Pid, St));
+	
+	{build_output, Pid, String} ->
+	    io:format("~w: ~s~n", [Pid, string:strip(String)]),
+	    main(St);
+	
 	X ->
-	    erlang:display({unknown, X}),
+	    throw(X),
 	    main(St)
-    after 5000 ->
+    
+    after 1000 ->
 	    if St#state.pending_build ->
 		    trigger_build(St);
 	       true ->
