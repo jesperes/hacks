@@ -20,6 +20,8 @@ start([Host, LocalCopy|_]) ->
     io:format("Server pid is: ~p~n", [ServerPid]),
     io:format("Using local copy: ~p~n", [LocalCopy]),
     
+    filelib:ensure_dir(LocalCopy),
+
     St = #state{files = [], server = ServerPid, localcopy = LocalCopy},
     loop(St).
 
@@ -91,6 +93,7 @@ execute_build(St, Cmd, Dir) ->
 					    {env, [{"PACK5_NOPROGRESS", "true"},
 						   {"PACK5_LOGLEVEL", "1"}]},
 					    exit_status,
+					    hide,
 					    stderr_to_stdout]),
 			  build_loop(Port, Parent)
 		  end),

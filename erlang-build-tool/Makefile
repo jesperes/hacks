@@ -19,7 +19,7 @@ ERLC= erlc -W -v +debug_info
 	$(ERLC) $<
 
 all: compile
-compile: $(MODS:%.erl=%.beam) fmon_driver
+compile: $(MODS:%.erl=%.beam) # fmon_driver
 
 %.o: %.c
 	$(CC) $(CFLAGS) $< -c -o $@
