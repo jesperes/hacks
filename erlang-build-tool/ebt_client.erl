@@ -95,8 +95,8 @@ execute_build(St, Cmd, Dir) ->
 	    Parent = self(),
 	    spawn(fun() ->
 			  AbsDir = filename:join(St#state.localcopy, Dir),
-			  ok = filelib:ensure_dir(AbsDir),
-			  ok = file:make_dir(AbsDir),
+			  filelib:ensure_dir(AbsDir),
+			  file:make_dir(AbsDir),
 			  process_flag(trap_exit, true),
 			  io:format("Building: ~s~n", [Cmd]),
 			  Port = open_build_port(Cmd, AbsDir),

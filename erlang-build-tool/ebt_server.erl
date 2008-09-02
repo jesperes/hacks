@@ -155,6 +155,10 @@ build_dir(St, SystemType) ->
     Mod = St#state.source_config_mod,
     Mod:build_dir(SystemType).
 
+output_filter(St, SystemType, String) ->
+    Mod = St#state.source_config_mod,
+    Mod:output_filter(SystemType, String).
+
 get_build_message(St, SystemType) ->
     reload_source_config(St),
     case automatic_build(St, SystemType) of
@@ -168,8 +172,12 @@ get_build_message(St, SystemType) ->
 
 broadcast_filechange([], _, _, _, _) -> true;
 broadcast_filechange([{Client, _SystemType}|Clients], Path, Type, Fileinfo, St) ->
-    {ok, Binary} = file:read_file(Path),
-    Client ! {filechange, Path, Fileinfo, Binary},
+    case file:read_file(Path) of
+	{ok, Binary} ->
+	    Client ! {filechange, Path, Fileinfo, Binary};
+	X ->
+	    io:format("Failed to read file ~s: ~p~n", [Path, X])
+    end,
     broadcast_filechange(Clients, Path, Type, Fileinfo, St).
 
 send_file_to_client([], _, _) ->
@@ -326,7 +334,8 @@ main(St) ->
 	{build_complete, Pid, Status} ->
 	    {_, SystemType} = get_client(Pid, St),
 	    if Status == 0 ->
-		    io:format("Build completed successfully by ~p (~p)~n", [Pid, SystemType]);
+		    io:format("Build completed successfully at ~p by ~p (~p)~n", 
+			      [time(), Pid, SystemType]);
 	       true ->
 		    io:format("Build failed on ~p (~p)~n", [Pid, SystemType])
 	    end,
@@ -336,7 +345,13 @@ main(St) ->
 	    main(handle_client_exit(Pid, St));
 	
 	{build_output, Pid, String} ->
-	    io:format("~w: ~s~n", [Pid, string:strip(String)]),
+	    {_, SystemType} = get_client(Pid, St),
+	    case output_filter(St, SystemType, String) of
+		true ->
+		    io:format("~w: ~s~n", [Pid, string:strip(String)]);
+		false ->
+		    false
+	    end,
 	    main(St);
 	
 	X ->
