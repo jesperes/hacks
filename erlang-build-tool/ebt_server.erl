@@ -23,8 +23,7 @@ start([SrcDir|_]) ->
     SrcDirAbs = filename:absname(SrcDir),
     {SrcConfigMod, File} = load_source_config_module(SrcDirAbs),
     io:format("\rLoaded source config module: ~p~n", [File]),
-    io:format("Exclude pattern: ~p~n", [SrcConfigMod:get_excludes()]),
-    %% io:format("Autobuild: ~p~n", [SrcConfigMod:automatic_build()]),
+    %% io:format("Exclude pattern: ~p~n", [SrcConfigMod:get_excludes()]),
     file_monitor:start(),
     spawn(fun() ->
 		  register(ebt_server, self()),
@@ -43,8 +42,10 @@ register_client(ServerHost) ->
     erlang:send({ebt_server, ServerNode},
 	        {register, self(), get_system_type()}),
     receive
-	{ebt_server, ServerPid} ->
-	    ServerPid
+	{ebt_server, ServerPid, NumFiles} ->
+	    io:format("Registered with server ~p (tracking ~p files)~n",
+		      [ServerPid, NumFiles]),
+	    {ServerPid, NumFiles}
     end.
 
 request_file(ServerPid, F) ->
@@ -57,8 +58,8 @@ uname_m() ->
     
 get_system_type() ->
     case os:type() of
-	{win32, OsName} ->
-	    {OsName, os:version()};
+	{win32, _OsName} ->
+	    {win32, os:version()};
 	{unix, OsName} ->
 	    {OsName, uname_m()};
 	X ->
@@ -133,8 +134,7 @@ monitor_file_or_dir(Node, Receiver) ->
 monitor_tree(Receiver, St) ->
     time_call(
       fun() ->
-	      {ok, Cwd} = file:get_cwd(),
-	      io:format("\rScanning directory for files to monitor: ~p~n", [Cwd]),
+	      io:format("\rScanning directory for files to monitor: ~p~n", [St#state.srcdir]),
 	      {Files, NumFiles, NumExcl} = get_monitored_files(St#state.srcdir, St),
 	      io:format("\rFiles to monitor: ~p (~p files excluded)~n", [NumFiles, NumExcl]),
 	      lists:map(fun(F) -> monitor_file_or_dir(F, Receiver) end, Files)
@@ -159,7 +159,9 @@ get_build_message(St, SystemType) ->
     reload_source_config(St),
     case automatic_build(St, SystemType) of
 	true ->
-	    {build, build_command(St, SystemType), build_dir(St, SystemType)};
+	    {build, 
+	     build_command(St, SystemType), 
+	     build_dir(St, SystemType)};
 	false ->
 	    false
     end.
@@ -187,10 +189,12 @@ send_fileinfo_to_client(File, Client) ->
     {ok, Binary} = file:read_file(File),
     Sha = crypto:sha(Binary),
     Client ! {fileinfo, File, FileInfo, Sha}.
+
 send_filelist_to_client(Client, St) ->
     F = fun(File) ->
 		send_fileinfo_to_client(File, Client)
 	end,
+    io:format("Sending file info to ~w (~w files)~n", [Client, length(St#state.files)]),
     lists:map(F, St#state.files).
 
 
@@ -199,7 +203,7 @@ add_client(Pid, SystemType, St) ->
     time_call(
       fun() ->
 	      link(Pid),
-	      Pid ! {ebt_server, self()},
+	      Pid ! {ebt_server, self(), length(St#state.files)},
 	      send_filelist_to_client(Pid, St),
 	      Pid ! fileinfo_complete
       end,
@@ -207,6 +211,7 @@ add_client(Pid, SystemType, St) ->
 	      io:format("Sent file info to ~p (~g seconds)~n",
 			[Pid, Time/1000])
       end),
+    %% TODO: track pending_build state individually for each client
     St#state{ clients = [{Pid, SystemType}|St#state.clients],
 	      pending_build = true }.
 
@@ -306,7 +311,7 @@ main(St) ->
 		  });
 
 	{file_monitor, _Ref, {changed, Path, Type, FileInfo, _}} ->
-	    io:format("Changed: ~w~n", [Path]),
+	    io:format("Changed: ~s~n", [Path]),
 	    broadcast_filechange(St#state.clients, Path, Type, FileInfo, St),
 	    main(St#state{
 		   last_build = erlang:now(),

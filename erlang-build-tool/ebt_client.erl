@@ -8,6 +8,7 @@
 	  server, 
 	  localcopy, 
 	  fileinfo_count = 0, 
+	  filecount = 0,
 	  pending_build = false}).
 
 start([Host, LocalCopy|_]) ->
@@ -15,14 +16,17 @@ start([Host, LocalCopy|_]) ->
 
     io:format("Registering with server at ~s~n", [Host]),
     
-    ServerPid = ebt_server:register_client(Host),
+    {ServerPid, NumFiles} = ebt_server:register_client(Host),
 
     io:format("Server pid is: ~p~n", [ServerPid]),
     io:format("Using local copy: ~p~n", [LocalCopy]),
     
     filelib:ensure_dir(LocalCopy),
 
-    St = #state{files = [], server = ServerPid, localcopy = LocalCopy},
+    St = #state{files = [], 
+		server = ServerPid, 
+		localcopy = LocalCopy,
+		filecount = NumFiles},
     loop(St).
 
 get_local_filename(File, St) ->
@@ -76,6 +80,15 @@ build_loop(Port, Parent) ->
 	    build_loop(Port, Parent)
     end.
 
+open_build_port(Cmd, Dir) ->
+    open_port({spawn, Cmd},
+	      [{cd, Dir},
+	       {line, 1024},
+	       {env, [{"PACK5_NOPROGRESS", "true"},
+		      {"PACK5_LOGLEVEL", "1"}]},
+	       exit_status,
+	       stderr_to_stdout]).
+
 execute_build(St, Cmd, Dir) ->
     if St#state.pending_build ->
 	    io:format("Build already pending, ignoring build request.~n", []),
@@ -84,17 +97,11 @@ execute_build(St, Cmd, Dir) ->
 	    Parent = self(),
 	    spawn(fun() ->
 			  AbsDir = filename:join(St#state.localcopy, Dir),
+			  ok = filelib:ensure_dir(AbsDir),
+			  ok = file:make_dir(AbsDir),
 			  process_flag(trap_exit, true),
-			  io:format("Starting build.~n", []),
-			  io:format("Build command: ~s~n", [Cmd]),
-			  Port = open_port({spawn, Cmd},
-					   [{cd, AbsDir},
-					    {line, 1024},
-					    {env, [{"PACK5_NOPROGRESS", "true"},
-						   {"PACK5_LOGLEVEL", "1"}]},
-					    exit_status,
-					    hide,
-					    stderr_to_stdout]),
+			  io:format("Building: ~s~n", [Cmd]),
+			  Port = open_build_port(Cmd, AbsDir),
 			  build_loop(Port, Parent)
 		  end),
 	    St#state{pending_build = true}
@@ -105,17 +112,22 @@ loop(St) ->
 	fileinfo_complete ->
 	    io:format("File info received (~p files)~n", [St#state.fileinfo_count]),
 	    loop(St);
+
 	{filechange, File, Fileinfo, Binary} ->
 	    write_file(File, Fileinfo, Binary, St),
 	    loop(St);
+
 	{fileinfo, File, FileInfo, Sha} ->
 	    check_file(File, FileInfo, Sha, St),
 	    loop(St#state{fileinfo_count = St#state.fileinfo_count+1});
+
 	{get_file, File, FileInfo, Binary} ->
 	    write_file(File, FileInfo, Binary, St),
 	    loop(St);
+
 	{build, BuildCmd, BuildDir} ->
 	    loop(execute_build(St, BuildCmd, BuildDir));
+
 	{build_complete, Status} ->
 	    St#state.server ! {build_complete, self(), Status},
 	    loop(St#state{pending_build = false});
