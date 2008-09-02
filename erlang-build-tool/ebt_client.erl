@@ -21,6 +21,8 @@ start([Host, LocalCopy|_]) ->
     io:format("Server pid is: ~p~n", [ServerPid]),
     io:format("Using local copy: ~p~n", [LocalCopy]),
     
+    filelib:ensure_dir(LocalCopy),
+
     St = #state{files = [], 
 		server = ServerPid, 
 		localcopy = LocalCopy,
