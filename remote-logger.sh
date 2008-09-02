@@ -2,7 +2,7 @@
 # View logs remotely via ssh
 
 host=$1
-logs="messages syslog kern.log"
+logs="messages syslog"
 cmd="tail -f "
 for l in $logs; do
     cmd="$cmd /var/log/$l"
