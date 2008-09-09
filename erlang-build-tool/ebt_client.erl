@@ -89,7 +89,7 @@ open_build_port(Cmd, Dir) ->
 	       exit_status,
 	       stderr_to_stdout]).
 
-execute_build(St, false, Cmd, Dir) ->
+execute_build(_St, false, _Cmd, _Dir) ->
     io:format("Automatic build disabled.~n", []);
 
 execute_build(St, true, Cmd, Dir) ->

@@ -167,7 +167,7 @@ output_filter(St, SystemType, String) ->
 get_build_message(St, SystemType) ->
     reload_source_config(St),
     {build, 
-     automatic_build(St, SystemType)
+     automatic_build(St, SystemType),
      build_command(St, SystemType), 
      build_dir(St, SystemType)}.
 
