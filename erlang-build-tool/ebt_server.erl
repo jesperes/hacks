@@ -164,10 +164,16 @@ output_filter(St, SystemType, String) ->
     Mod = St#state.source_config_mod,
     Mod:output_filter(SystemType, String).
 
-get_build_message(St, SystemType) ->
+get_build_message(St, SystemType, false) ->
     reload_source_config(St),
     {build, 
      automatic_build(St, SystemType),
+     build_command(St, SystemType), 
+     build_dir(St, SystemType)};
+get_build_message(St, SystemType, true) ->
+    reload_source_config(St),
+    {build, 
+     true,
      build_command(St, SystemType), 
      build_dir(St, SystemType)}.
 
@@ -230,24 +236,31 @@ diff_time(A, B) ->
     {B1, B2, B3} = B,
     {A1 - B1, A2 - B2, A3 - B3}.
 
+
 trigger_build(St) ->
+    trigger_build(St, false).
+
+trigger_build(St, true) ->
+    trigger_build(St#state.clients, St, true);
+    
+trigger_build(St, false) ->
     case St#state.last_build of
 	never ->
-	    trigger_build(St#state.clients, St);
+	    trigger_build(St#state.clients, St, false);
 	Time ->
 	    Diff = diff_time(erlang:now(), Time),
 	    if Diff > {0, 0, 5} ->
-		    trigger_build(St#state.clients, St);
+		    trigger_build(St#state.clients, St, false);
 	       true ->
 		    true
 	    end
     end.
 
 
-trigger_build([], _) ->
+trigger_build([], _, Force) ->
     true;
-trigger_build([{Pid, SystemType}|Clients], St) ->
-    case catch get_build_message(St, SystemType) of
+trigger_build([{Pid, SystemType}|Clients], St, Force) ->
+    case catch get_build_message(St, SystemType, Force) of
 	{build, _, _, _} = Msg ->
 	    io:format("Triggering build on ~p (~p)~n", [Pid, SystemType]),
 	    Pid ! Msg;
@@ -256,7 +269,7 @@ trigger_build([{Pid, SystemType}|Clients], St) ->
 	{'EXIT', {undef, [Fun|_]}} ->
 	    io:format("Missing method in source config module: ~p~n", [Fun])
     end,
-    trigger_build(Clients, St).
+    trigger_build(Clients, St, Force).
 
 
 get_client(Pid, St) ->
@@ -362,7 +375,7 @@ main(St) ->
 
 	manual_build ->
 	    io:format("\rManually triggering build.~n", []),
-	    trigger_build(St#state.clients, St),
+	    trigger_build(St, true),
 	    main(St);
 	
 	X ->

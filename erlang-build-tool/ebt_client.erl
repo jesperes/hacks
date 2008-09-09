@@ -46,7 +46,7 @@ check_file(File, FileInfo, Sha, St) ->
 		    ebt_server:request_file(St#state.server, File)
 	    end;
 	{error, enoent} ->
-	    %% io:format("File does not exist: ~p~n", [File]),
+	    io:format("File does not exist: ~p~n", [File]),
 	    ebt_server:request_file(St#state.server, File);
 	{error, X} ->
 	    io:format("Unknown error: ~p (~p)~n", [X, File])
@@ -58,7 +58,7 @@ write_file(File, FileInfo, Binary, St) ->
     case file:write_file(LocalFile, Binary) of
 	ok ->
 	    ok = file:write_file_info(LocalFile, FileInfo),
-	    io:format("Updated: ~p~n", [LocalFile]);
+	    io:format(".");
 	X ->
 	    io:format("Failed to write file ~p: ~p~n", [X, LocalFile])
     end.
