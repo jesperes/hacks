@@ -9,7 +9,9 @@
 	  localcopy, 
 	  fileinfo_count = 0, 
 	  filecount = 0,
-	  pending_build = false}).
+	  pending_build = false,
+	  setup_phase = true}).
+
 
 start([Host, LocalCopy|_]) ->
     crypto:start(),
@@ -30,7 +32,6 @@ start([Host, LocalCopy|_]) ->
     loop(St).
 
 get_local_filename(File, St) ->
-    erlang:display(St),
     filename:absname_join(St#state.localcopy, File).
 
 check_file(File, FileInfo, Sha, St) ->
@@ -64,34 +65,40 @@ write_file(File, FileInfo, Binary, St) ->
 	    io:format("Failed to write file ~p: ~p~n", [X, LocalFile])
     end.
 
-build_loop(Port, Parent) ->
+build_loop(Port, Parent, Buf) ->
     receive 
 	{_, {exit_status, Exit}} ->
 	    Parent ! {build_complete, Exit},
 	    io:format("Build completed: ~p~n", [Exit]),
-	    build_loop(Port, Parent);
+	    build_loop(Port, Parent, Buf);
 	{_, {data, {eol, String}}} ->
-	    Parent ! {child_output, String},
 	    io:format("~s~n", [String]),
-	    build_loop(Port, Parent);
+	    Str = Buf ++ String,
+	    Parent ! {child_output, Str},
+	    build_loop(Port, Parent, []);
+	{_, {data, {noeol, String}}} ->
+	    io:format("~s", [String]),
+	    build_loop(Port, Parent, Buf ++ String);
 	{'EXIT', _, Reason} ->
 	    io:format("Build driver terminated: ~p~n", [Reason]);
 	X ->
 	    erlang:display({unknown, X}),
-	    build_loop(Port, Parent)
+	    build_loop(Port, Parent, Buf)
     end.
 
 open_build_port(Cmd, Dir) ->
     open_port({spawn, Cmd},
 	      [{cd, Dir},
-	       {line, 1024},
+	       {line, 100},
 	       {env, [{"PACK5_NOPROGRESS", "true"},
 		      {"PACK5_LOGLEVEL", "1"}]},
 	       exit_status,
+	       hide,
 	       stderr_to_stdout]).
 
-execute_build(_St, false, _Cmd, _Dir) ->
-    io:format("Automatic build disabled.~n", []);
+execute_build(St, false, _Cmd, _Dir) ->
+    io:format("Automatic build disabled.~n", []),
+    St;
 
 execute_build(St, true, Cmd, Dir) ->
     if St#state.pending_build ->
@@ -106,7 +113,7 @@ execute_build(St, true, Cmd, Dir) ->
 			  process_flag(trap_exit, true),
 			  io:format("Building: ~s~n", [Cmd]),
 			  Port = open_build_port(Cmd, AbsDir),
-			  build_loop(Port, Parent)
+			  build_loop(Port, Parent, [])
 		  end),
 	    St#state{pending_build = true}
     end.
@@ -152,7 +159,11 @@ loop(St) ->
 	    erlang:display(X),
 	    loop(St)
     after 2500 ->
-	    %% io:format("Idle.~n", []),
-	    loop(St)
+	    if St#state.setup_phase ->
+		    io:format("Setup phase complete. Listening for changes..~n", []),
+		    loop(St#state{setup_phase = false});
+	       true ->
+		    loop(St)
+	    end
     end.
-	    
+
