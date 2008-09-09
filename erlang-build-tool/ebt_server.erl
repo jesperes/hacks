@@ -248,7 +248,7 @@ trigger_build([], _) ->
     true;
 trigger_build([{Pid, SystemType}|Clients], St) ->
     case catch get_build_message(St, SystemType) of
-	{build, _, _} = Msg ->
+	{build, _, _, _} = Msg ->
 	    io:format("Triggering build on ~p (~p)~n", [Pid, SystemType]),
 	    Pid ! Msg;
 	false ->

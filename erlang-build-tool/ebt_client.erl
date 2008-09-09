@@ -42,7 +42,7 @@ check_file(File, FileInfo, Sha, St) ->
 		    %% io:format("Local copy is up-to-date: ~p~n", [LocalFile]),
 		    file:write_file_info(LocalFile, FileInfo);
 	       true ->
-		    %% io:format("Local copy is not up-to-date: ~p~n", [LocalFile]),
+		    io:format("Local copy is not up-to-date (sha sum mismatch): ~p~n", [LocalFile]),
 		    ebt_server:request_file(St#state.server, File)
 	    end;
 	{error, enoent} ->
