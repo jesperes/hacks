@@ -89,7 +89,10 @@ open_build_port(Cmd, Dir) ->
 	       exit_status,
 	       stderr_to_stdout]).
 
-execute_build(St, Cmd, Dir) ->
+execute_build(St, false, Cmd, Dir) ->
+    io:format("Automatic build disabled.~n", []);
+
+execute_build(St, true, Cmd, Dir) ->
     if St#state.pending_build ->
 	    io:format("Build already pending, ignoring build request.~n", []),
 	    St;
@@ -125,8 +128,8 @@ loop(St) ->
 	    write_file(File, FileInfo, Binary, St),
 	    loop(St);
 
-	{build, BuildCmd, BuildDir} ->
-	    loop(execute_build(St, BuildCmd, BuildDir));
+	{build, AutoBuild, BuildCmd, BuildDir} ->
+	    loop(execute_build(St, AutoBuild, BuildCmd, BuildDir));
 
 	{build_complete, Status} ->
 	    St#state.server ! {build_complete, self(), Status},

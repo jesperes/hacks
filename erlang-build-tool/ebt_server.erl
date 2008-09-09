@@ -1,6 +1,8 @@
 -module(ebt_server).
 -compile(debug_info).
--export([start/0, start/1, register_client/1, request_file/2]).
+-export([start/0, start/1, register_client/1, request_file/2, build/0]).
+
+-include_lib("kernel/include/file.hrl").
 
 -record(state, {
 	  srcdir,
@@ -50,6 +52,9 @@ register_client(ServerHost) ->
 
 request_file(ServerPid, F) ->
     ServerPid ! {get_file, self(), F}.
+
+build() ->
+    whereis(ebt_server) ! manual_build.
 
 %%% INTERNAL
 uname_m() ->
@@ -161,14 +166,10 @@ output_filter(St, SystemType, String) ->
 
 get_build_message(St, SystemType) ->
     reload_source_config(St),
-    case automatic_build(St, SystemType) of
-	true ->
-	    {build, 
-	     build_command(St, SystemType), 
-	     build_dir(St, SystemType)};
-	false ->
-	    false
-    end.
+    {build, 
+     automatic_build(St, SystemType)
+     build_command(St, SystemType), 
+     build_dir(St, SystemType)}.
 
 broadcast_filechange([], _, _, _, _) -> true;
 broadcast_filechange([{Client, _SystemType}|Clients], Path, Type, Fileinfo, St) ->
@@ -246,10 +247,12 @@ trigger_build(St) ->
 trigger_build([], _) ->
     true;
 trigger_build([{Pid, SystemType}|Clients], St) ->
-    io:format("Triggering build on ~p (~p)~n", [Pid, SystemType]),
     case catch get_build_message(St, SystemType) of
 	{build, _, _} = Msg ->
+	    io:format("Triggering build on ~p (~p)~n", [Pid, SystemType]),
 	    Pid ! Msg;
+	false ->
+	    false;
 	{'EXIT', {undef, [Fun|_]}} ->
 	    io:format("Missing method in source config module: ~p~n", [Fun])
     end,
@@ -319,7 +322,10 @@ main(St) ->
 		  });
 
 	{file_monitor, _Ref, {changed, Path, Type, FileInfo, _}} ->
-	    io:format("Changed: ~s~n", [Path]),
+	    io:format("Changed: ~s (~w, ~w bytes)~n", 
+		      [Path, 
+		       FileInfo#file_info.mtime,
+		       FileInfo#file_info.size]),
 	    broadcast_filechange(St#state.clients, Path, Type, FileInfo, St),
 	    main(St#state{
 		   last_build = erlang:now(),
@@ -346,12 +352,17 @@ main(St) ->
 	
 	{build_output, Pid, String} ->
 	    {_, SystemType} = get_client(Pid, St),
-	    case output_filter(St, SystemType, String) of
-		true ->
-		    io:format("~w: ~s~n", [Pid, string:strip(String)]);
+	    case catch output_filter(St, SystemType, String) of
 		false ->
-		    false
+		    false;
+		_ ->
+		    io:format("~w: ~s~n", [Pid, string:strip(String)])
 	    end,
+	    main(St);
+
+	manual_build ->
+	    io:format("\rManually triggering build.~n", []),
+	    trigger_build(St#state.clients, St),
 	    main(St);
 	
 	X ->
