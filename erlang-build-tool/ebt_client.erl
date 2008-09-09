@@ -30,6 +30,7 @@ start([Host, LocalCopy|_]) ->
     loop(St).
 
 get_local_filename(File, St) ->
+    erlang:display(St),
     filename:absname_join(St#state.localcopy, File).
 
 check_file(File, FileInfo, Sha, St) ->
