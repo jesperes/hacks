@@ -24,7 +24,7 @@ start([Host, LocalCopy|_]) ->
     {ServerPid, NumFiles} = ebt_server:register_client(Host),
 
     log("Server pid is: ~w~n", [ServerPid]),
-    log("Using local copy: ~w~n", [LocalCopy]),
+    log("Using local copy: ~s~n", [LocalCopy]),
     
     filelib:ensure_dir(LocalCopy),
 
@@ -37,35 +37,46 @@ start([Host, LocalCopy|_]) ->
 get_local_filename(File, St) ->
     filename:absname_join(St#state.localcopy, File).
 
-check_file(File, FileInfo, Sha, St) ->
+check_file(File, FileInfo, _Sha, St) ->
     LocalFile = get_local_filename(File, St),
     case file:read_file_info(LocalFile) of
-	{ok, _LocalFileInfo} ->	    %% file exists
-	    {ok, Binary} = file:read_file(LocalFile),
-	    LocalSha = crypto:sha(Binary),
-	    if LocalSha == Sha ->
-		    %% log("Local copy is up-to-date: ~w~n", [LocalFile]),
-		    file:write_file_info(LocalFile, FileInfo);
+	{ok, LocalFileInfo} ->	    %% file exists
+	    log("Local/Remote ~w/~w~n", 
+		[LocalFileInfo#file_info.mtime,
+		 FileInfo#file_info.mtime]),
+	    if LocalFileInfo#file_info.mtime == FileInfo#file_info.mtime ->
+		    true;
 	       true ->
-		    log("Requesting file (checksum): ~w~n", [LocalFile]),
+		    log("Requesting file: ~s~n", [LocalFile]),
 		    ebt_server:request_file(St#state.server, File)
 	    end;
 	{error, enoent} ->
-	    log("Requesting file (does not exist): ~w~n", [File]),
+	    log("Requesting file (does not exist): ~s~n", [File]),
 	    ebt_server:request_file(St#state.server, File);
 	{error, X} ->
-	    log("Unknown error: ~w (~w)~n", [X, File])
+	    log("Unknown error: ~w (~s)~n", [X, File])
     end.
 	    
+verify_mtime(Path, Mtime) ->
+    {ok, Fi} = file:read_file_info(Path),
+    case Fi#file_info.mtime of
+	Mtime ->
+	    true;
+	X ->
+	    throw({set_mtime_failed, Path, X, Mtime})
+    end.
+
 write_file(File, FileInfo, Binary, St) ->
     LocalFile = get_local_filename(File, St),
     ok = filelib:ensure_dir(filename:absname(LocalFile)),
     case file:write_file(LocalFile, Binary) of
 	ok ->
+	    %% ok = file:change_time(LocalFile, FileInfo),
 	    ok = file:write_file_info(LocalFile, FileInfo),
-	    log("Updated: ~w~n", [LocalFile]);
+	    verify_mtime(LocalFile, FileInfo#file_info.mtime),
+	    log("Updated: ~s~n", [LocalFile]);
 	X ->
-	    log("Failed to write file ~w: ~w~n", [X, LocalFile])
+	    log("Failed to write file ~w: ~s~n", [X, LocalFile])
     end.
 
 build_loop(Port, Parent, Buf) ->
@@ -174,7 +185,7 @@ loop(St) ->
 	    loop(St)
     after 2500 ->
 	    if St#state.setup_phase ->
-		    log("Setup phase complete. Listening for changes..~n", []),
+		    log("Setup phase complete.~n", []),
 		    loop(St#state{setup_phase = false});
 	       true ->
 		    loop(St)

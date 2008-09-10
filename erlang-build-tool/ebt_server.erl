@@ -24,7 +24,7 @@ start([SrcDir|_]) ->
     
     SrcDirAbs = filename:absname(SrcDir),
     {SrcConfigMod, File} = load_source_config_module(SrcDirAbs),
-    log("Loaded source config module: ~w~n", [File]),
+    log("Loaded source config module: ~s~n", [File]),
     %% io:format("Exclude pattern: ~w~n", [SrcConfigMod:get_excludes()]),
     file_monitor:start(),
     spawn(fun() ->
@@ -142,7 +142,7 @@ monitor_file_or_dir(Node, Receiver) ->
 monitor_tree(Receiver, St) ->
     time_call(
       fun() ->
-	      log("Scanning directory for files to monitor: ~w~n", [St#state.srcdir]),
+	      log("Scanning directory for files to monitor: ~s~n", [St#state.srcdir]),
 	      {Files, NumFiles, NumExcl} = get_monitored_files(St#state.srcdir, St),
 	      log("Files to monitor: ~w (~w files excluded)~n", [NumFiles, NumExcl]),
 	      lists:map(fun(F) -> monitor_file_or_dir(F, Receiver) end, Files)
@@ -260,7 +260,7 @@ trigger_build(St, false) ->
     end.
 
 
-trigger_build([], _, Force) ->
+trigger_build([], _St, _Force) ->
     true;
 trigger_build([{Pid, SystemType}|Clients], St, Force) ->
     case catch get_build_message(St, SystemType, Force) of
@@ -372,7 +372,7 @@ main(St) ->
 		false ->
 		    false;
 		_ ->
-		    io:format("~w: ~s~n", [Pid, string:strip(String)])
+		    io:format("~w ### ~s~n", [Pid, string:strip(String)])
 	    end,
 	    main(St);
 
