@@ -37,14 +37,22 @@ start([Host, LocalCopy|_]) ->
 get_local_filename(File, St) ->
     filename:absname_join(St#state.localcopy, File).
 
-check_file(File, FileInfo, _Sha, St) ->
+is_local_file_uptodate(LocalFile, _LocalFileInfo, _RemoteFileInfo, RemoteSha) ->
+    case file:read_file(LocalFile) of
+	{ok, Binary} ->
+	    LocalSha = crypto:sha(Binary),
+	    LocalSha == RemoteSha;
+	Reason ->
+	    log("Failed to check local file: ~w~n", [Reason])
+    end.
+
+check_file(File, RemoteFileInfo, RemoteSha, St) ->
     LocalFile = get_local_filename(File, St),
     case file:read_file_info(LocalFile) of
 	{ok, LocalFileInfo} ->	    %% file exists
-	    log("Local/Remote ~w/~w~n", 
-		[LocalFileInfo#file_info.mtime,
-		 FileInfo#file_info.mtime]),
-	    if LocalFileInfo#file_info.mtime == FileInfo#file_info.mtime ->
+	    UpToDate = is_local_file_uptodate(LocalFile, LocalFileInfo, 
+					      RemoteFileInfo, RemoteSha),
+	    if UpToDate ->
 		    true;
 	       true ->
 		    log("Requesting file: ~s~n", [LocalFile]),
@@ -71,8 +79,8 @@ write_file(File, FileInfo, Binary, St) ->
     ok = filelib:ensure_dir(filename:absname(LocalFile)),
     case file:write_file(LocalFile, Binary) of
 	ok ->
-	    %% ok = file:change_time(LocalFile, FileInfo),
-	    ok = file:write_file_info(LocalFile, FileInfo),
+	    Mtime = FileInfo#file_info.mtime,
+	    ok = file:change_time(LocalFile, Mtime, Mtime),
 	    verify_mtime(LocalFile, FileInfo#file_info.mtime),
 	    log("Updated: ~s~n", [LocalFile]);
 	X ->
