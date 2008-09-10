@@ -9,7 +9,8 @@
 	  localcopy, 
 	  fileinfo_count = 0, 
 	  filecount = 0,
-	  pending_builds = 0,
+	  building = false,
+	  pending_build = false,
 	  build_command = {},
 	  setup_phase = true}).
 
@@ -124,11 +125,10 @@ execute_build(St, false, _Cmd, _Dir) ->
     St;
 
 execute_build(St, true, Cmd, Dir) ->
-    PendingBuilds = St#state.pending_builds,
-    if PendingBuilds > 0 ->
-	    log("Build already pending, queuing build request.~n", []),
-	    St#state{pending_builds = PendingBuilds + 1,
-		     build_command = {Cmd, Dir}};
+    if St#state.building ->
+	    log("Build in progress, queuing build request.~n", []),
+	    St#state{pending_build = true,
+		     build_command = {Cmd, true, Dir}};
        true ->
 	    Parent = self(),
 	    spawn(fun() ->
@@ -140,7 +140,9 @@ execute_build(St, true, Cmd, Dir) ->
 			  Port = open_build_port(Cmd, AbsDir),
 			  build_loop(Port, Parent, [])
 		  end),
-	    St#state{build_command = {Cmd, Dir}}
+	    St#state{build_command = {Cmd, true, Dir},
+		     building = true,
+		     pending_build = false}
     end.
 
 loop(St) ->
@@ -166,14 +168,13 @@ loop(St) ->
 	
 	{build_complete, Status} ->
 	    St#state.server ! {build_complete, self(), Status},
-	    PendingBuilds = St#state.pending_builds,
-	    St0 = St#state{pending_builds = PendingBuilds - 1},
-	    {Cmd, Dir} = St#state.build_command,
-	    if PendingBuilds > 0 ->
+	    {Cmd, AutoBuild, Dir} = St#state.build_command,
+	    St_1 = St#state{building = false},
+	    if St_1#state.pending_build ->
 		    log("Executing queued build...~n", []),
-		    loop(execute_build(St0, true, Cmd, Dir));
+		    loop(execute_build(St_1, AutoBuild, Cmd, Dir));
 	       true ->
-		    loop(St0)
+		    loop(St_1)
 	    end;
 
 	{child_output, String} ->
