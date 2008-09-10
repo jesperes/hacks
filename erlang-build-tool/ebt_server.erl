@@ -372,7 +372,7 @@ main(St) ->
 		false ->
 		    false;
 		_ ->
-		    io:format("~w ### ~s~n", [Pid, string:strip(String)])
+		    io:format("   ~w ~s~n", [Pid, string:strip(String)])
 	    end,
 	    main(St);
 
