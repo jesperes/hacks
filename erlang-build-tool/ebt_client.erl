@@ -23,8 +23,8 @@ start([Host, LocalCopy|_]) ->
     
     {ServerPid, NumFiles} = ebt_server:register_client(Host),
 
-    log("Server pid is: ~p~n", [ServerPid]),
-    log("Using local copy: ~p~n", [LocalCopy]),
+    log("Server pid is: ~w~n", [ServerPid]),
+    log("Using local copy: ~w~n", [LocalCopy]),
     
     filelib:ensure_dir(LocalCopy),
 
@@ -44,17 +44,17 @@ check_file(File, FileInfo, Sha, St) ->
 	    {ok, Binary} = file:read_file(LocalFile),
 	    LocalSha = crypto:sha(Binary),
 	    if LocalSha == Sha ->
-		    %% log("Local copy is up-to-date: ~p~n", [LocalFile]),
+		    %% log("Local copy is up-to-date: ~w~n", [LocalFile]),
 		    file:write_file_info(LocalFile, FileInfo);
 	       true ->
-		    log("Requesting file (checksum): ~p~n", [LocalFile]),
+		    log("Requesting file (checksum): ~w~n", [LocalFile]),
 		    ebt_server:request_file(St#state.server, File)
 	    end;
 	{error, enoent} ->
-	    log("Requesting file (does not exist): ~p~n", [File]),
+	    log("Requesting file (does not exist): ~w~n", [File]),
 	    ebt_server:request_file(St#state.server, File);
 	{error, X} ->
-	    log("Unknown error: ~p (~p)~n", [X, File])
+	    log("Unknown error: ~w (~w)~n", [X, File])
     end.
 	    
 write_file(File, FileInfo, Binary, St) ->
@@ -63,16 +63,16 @@ write_file(File, FileInfo, Binary, St) ->
     case file:write_file(LocalFile, Binary) of
 	ok ->
 	    ok = file:write_file_info(LocalFile, FileInfo),
-	    log("Updated: ~p~n", [LocalFile]);
+	    log("Updated: ~w~n", [LocalFile]);
 	X ->
-	    log("Failed to write file ~p: ~p~n", [X, LocalFile])
+	    log("Failed to write file ~w: ~w~n", [X, LocalFile])
     end.
 
 build_loop(Port, Parent, Buf) ->
     receive 
 	{_, {exit_status, Exit}} ->
 	    Parent ! {build_complete, Exit},
-	    log("Build completed: ~p~n", [Exit]),
+	    log("Build completed: ~w~n", [Exit]),
 	    build_loop(Port, Parent, Buf);
 	{_, {data, {eol, String}}} ->
 	    io:format("~s~n", [String]),
@@ -83,7 +83,7 @@ build_loop(Port, Parent, Buf) ->
 	    io:format("~s", [String]),
 	    build_loop(Port, Parent, Buf ++ String);
 	{'EXIT', _, Reason} ->
-	    log("Build driver terminated: ~p~n", [Reason]);
+	    log("Build driver terminated: ~w~n", [Reason]);
 	X ->
 	    erlang:display({unknown, X}),
 	    build_loop(Port, Parent, Buf)
@@ -131,7 +131,7 @@ execute_queued_builds(St) ->
 loop(St) ->
     receive
 	fileinfo_complete ->
-	    log("File info received (~p files)~n", [St#state.fileinfo_count]),
+	    log("File info received (~w files)~n", [St#state.fileinfo_count]),
 	    loop(St);
 
 	{filechange, File, Fileinfo, Binary} ->
@@ -163,7 +163,7 @@ loop(St) ->
 
 	{'EXIT', Pid, Reason} ->
 	    if Pid == St#state.server ->
-		    log("Build server exiting (~p). Exiting client.~n", [Reason]),
+		    log("Build server exiting (~w). Exiting client.~n", [Reason]),
 		    init:stop();
 	       true ->
 		    %% ignore other EXIT signals

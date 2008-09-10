@@ -24,8 +24,8 @@ start([SrcDir|_]) ->
     
     SrcDirAbs = filename:absname(SrcDir),
     {SrcConfigMod, File} = load_source_config_module(SrcDirAbs),
-    log("Loaded source config module: ~p~n", [File]),
-    %% io:format("Exclude pattern: ~p~n", [SrcConfigMod:get_excludes()]),
+    log("Loaded source config module: ~w~n", [File]),
+    %% io:format("Exclude pattern: ~w~n", [SrcConfigMod:get_excludes()]),
     file_monitor:start(),
     spawn(fun() ->
 		  register(ebt_server, self()),
@@ -45,7 +45,7 @@ register_client(ServerHost) ->
 	        {register, self(), get_system_type()}),
     receive
 	{ebt_server, ServerPid, NumFiles} ->
-	    log("Registered with server ~p (tracking ~p files)~n",
+	    log("Registered with server ~w (tracking ~w files)~n",
 		[ServerPid, NumFiles]),
 	    {ServerPid, NumFiles}
     end.
@@ -71,7 +71,7 @@ get_system_type() ->
 	{unix, OsName} ->
 	    {OsName, uname_m()};
 	X ->
-	    log("Unknown system type: ~p~n", [X])
+	    log("Unknown system type: ~w~n", [X])
     end.
 
 get_source_file(SrcDir, File) ->
@@ -86,7 +86,7 @@ load_default_source_config_module() ->
 	{ok, Module} ->
 	    {Module, File};
 	X ->
-	    log("Failed to load (default) source module: ~p~n", [X]),
+	    log("Failed to load (default) source module: ~w~n", [X]),
 	    throw(load_source_config)
     end.
 
@@ -105,7 +105,7 @@ reload_source_config(St) ->
 	{ok, _} ->
 	    true;
 	X ->
-	    log("Failed to reload source config: ~p~n", [X])
+	    log("Failed to reload source config: ~w~n", [X])
     end.
 
 time_call(Fun, ResFun) ->
@@ -131,7 +131,7 @@ get_monitored_files(Dir, St) ->
     filelib:fold_files(".", ".*", true, F, {[], 0, 0}).
 
 monitor_file_or_dir(Node, Receiver) ->
-    %% log("Monitoring: ~p~n", [Node]),
+    %% log("Monitoring: ~w~n", [Node]),
     IsDir = filelib:is_dir(Node),
     if IsDir ->
 	    file_monitor:monitor_dir(Node, Receiver);
@@ -142,9 +142,9 @@ monitor_file_or_dir(Node, Receiver) ->
 monitor_tree(Receiver, St) ->
     time_call(
       fun() ->
-	      log("Scanning directory for files to monitor: ~p~n", [St#state.srcdir]),
+	      log("Scanning directory for files to monitor: ~w~n", [St#state.srcdir]),
 	      {Files, NumFiles, NumExcl} = get_monitored_files(St#state.srcdir, St),
-	      log("Files to monitor: ~p (~p files excluded)~n", [NumFiles, NumExcl]),
+	      log("Files to monitor: ~w (~w files excluded)~n", [NumFiles, NumExcl]),
 	      lists:map(fun(F) -> monitor_file_or_dir(F, Receiver) end, Files)
       end,
       fun(Time) ->
@@ -186,7 +186,7 @@ broadcast_filechange([{Client, _SystemType}|Clients], Path, Type, Fileinfo, St) 
 	{ok, Binary} ->
 	    Client ! {filechange, Path, Fileinfo, Binary};
 	X ->
-	    log("Failed to read file ~s: ~p~n", [Path, X])
+	    log("Failed to read file ~s: ~w~n", [Path, X])
     end,
     broadcast_filechange(Clients, Path, Type, Fileinfo, St).
 
@@ -217,7 +217,7 @@ send_filelist_to_client(Client, St) ->
 
 
 add_client(Pid, SystemType, St) ->
-    log("Registering client ~p (~p) at ~p~n", [Pid, SystemType, node(Pid)]),
+    log("Registering client ~w (~w) at ~w~n", [Pid, SystemType, node(Pid)]),
     time_call(
       fun() ->
 	      link(Pid),
@@ -226,7 +226,7 @@ add_client(Pid, SystemType, St) ->
 	      Pid ! fileinfo_complete
       end,
       fun(Time) -> 
-	      log("Sent file info to ~p (~g seconds)~n",
+	      log("Sent file info to ~w (~g seconds)~n",
 			[Pid, Time/1000])
       end),
     %% TODO: track pending_build state individually for each client
@@ -265,12 +265,12 @@ trigger_build([], _, Force) ->
 trigger_build([{Pid, SystemType}|Clients], St, Force) ->
     case catch get_build_message(St, SystemType, Force) of
 	{build, _, _, _} = Msg ->
-	    log("Triggering build on ~p (~p)~n", [Pid, SystemType]),
+	    log("Triggering build on ~w (~w)~n", [Pid, SystemType]),
 	    Pid ! Msg;
 	false ->
 	    false;
 	{'EXIT', {undef, [Fun|_]}} ->
-	    log("Missing method in source config module: ~p~n", [Fun])
+	    log("Missing method in source config module: ~w~n", [Fun])
     end,
     trigger_build(Clients, St, Force).
 
@@ -308,7 +308,7 @@ handle_client_exit(Pid, St) ->
 	    lists:foreach(
 	      fun(Client) ->
 		      {Pid0, SystemType} = Client,
-		      log("Client ~p (system type ~p)~n",
+		      log("Client ~w (system type ~w)~n",
 				[Pid0, SystemType])
 	      end,
 	      St0#state.clients)
@@ -323,7 +323,7 @@ main(St) ->
 
 	%% Request file contents
 	{get_file, Client, Path} ->
-	    %% log("Sending file to client ~p (~p): ~p~n", [Client, node(Client), Path]),
+	    %% log("Sending file to client ~w (~w): ~w~n", [Client, node(Client), Path]),
 	    send_file_to_client(St#state.files, Client, Path),
 	    main(St);
 
@@ -356,10 +356,10 @@ main(St) ->
 	{build_complete, Pid, Status} ->
 	    {_, SystemType} = get_client(Pid, St),
 	    if Status == 0 ->
-		    log("Build completed successfully at ~p by ~p (~p)~n", 
+		    log("Build completed successfully at ~w by ~w (~w)~n", 
 			      [time(), Pid, SystemType]);
 	       true ->
-		    log("Build failed on ~p (~p)~n", [Pid, SystemType])
+		    log("Build failed on ~w (~w)~n", [Pid, SystemType])
 	    end,
 	    main(St);
 
