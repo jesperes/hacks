@@ -24,7 +24,7 @@ start([SrcDir|_]) ->
     
     SrcDirAbs = filename:absname(SrcDir),
     {SrcConfigMod, File} = load_source_config_module(SrcDirAbs),
-    io:format("\rLoaded source config module: ~p~n", [File]),
+    log("Loaded source config module: ~p~n", [File]),
     %% io:format("Exclude pattern: ~p~n", [SrcConfigMod:get_excludes()]),
     file_monitor:start(),
     spawn(fun() ->
@@ -45,8 +45,8 @@ register_client(ServerHost) ->
 	        {register, self(), get_system_type()}),
     receive
 	{ebt_server, ServerPid, NumFiles} ->
-	    io:format("Registered with server ~p (tracking ~p files)~n",
-		      [ServerPid, NumFiles]),
+	    log("Registered with server ~p (tracking ~p files)~n",
+		[ServerPid, NumFiles]),
 	    {ServerPid, NumFiles}
     end.
 
@@ -57,6 +57,9 @@ build() ->
     whereis(ebt_server) ! manual_build.
 
 %%% INTERNAL
+log(Str, Args) ->
+    io:format("\rServer ### " ++ Str, Args).
+
 uname_m() ->
     S = os:cmd("uname -m"),
     list_to_atom(string:left(S, length(S) - 1)).
@@ -68,7 +71,7 @@ get_system_type() ->
 	{unix, OsName} ->
 	    {OsName, uname_m()};
 	X ->
-	    io:format("Unknown system type: ~p~n", [X])
+	    log("Unknown system type: ~p~n", [X])
     end.
 
 get_source_file(SrcDir, File) ->
@@ -83,7 +86,7 @@ load_default_source_config_module() ->
 	{ok, Module} ->
 	    {Module, File};
 	X ->
-	    io:format("Failed to load (default) source module: ~p~n", [X]),
+	    log("Failed to load (default) source module: ~p~n", [X]),
 	    throw(load_source_config)
     end.
 
@@ -97,12 +100,12 @@ load_source_config_module(SrcDir) ->
     end.
 
 reload_source_config(St) ->
-    %% io:format("Reloading source config.~n", []),
+    %% log("Reloading source config.~n", []),
     case c:c(St#state.source_config_file, {outdir, St#state.srcdir}) of
 	{ok, _} ->
 	    true;
 	X ->
-	    io:format("Failed to reload source config: ~p~n", [X])
+	    log("Failed to reload source config: ~p~n", [X])
     end.
 
 time_call(Fun, ResFun) ->
@@ -128,7 +131,7 @@ get_monitored_files(Dir, St) ->
     filelib:fold_files(".", ".*", true, F, {[], 0, 0}).
 
 monitor_file_or_dir(Node, Receiver) ->
-    %% io:format("Monitoring: ~p~n", [Node]),
+    %% log("Monitoring: ~p~n", [Node]),
     IsDir = filelib:is_dir(Node),
     if IsDir ->
 	    file_monitor:monitor_dir(Node, Receiver);
@@ -139,13 +142,13 @@ monitor_file_or_dir(Node, Receiver) ->
 monitor_tree(Receiver, St) ->
     time_call(
       fun() ->
-	      io:format("\rScanning directory for files to monitor: ~p~n", [St#state.srcdir]),
+	      log("Scanning directory for files to monitor: ~p~n", [St#state.srcdir]),
 	      {Files, NumFiles, NumExcl} = get_monitored_files(St#state.srcdir, St),
-	      io:format("\rFiles to monitor: ~p (~p files excluded)~n", [NumFiles, NumExcl]),
+	      log("Files to monitor: ~p (~p files excluded)~n", [NumFiles, NumExcl]),
 	      lists:map(fun(F) -> monitor_file_or_dir(F, Receiver) end, Files)
       end,
       fun(Time) ->
-	      io:format("\rSetup phase took ~g seconds.~n", [Time/1000])
+	      log("Setup phase took ~g seconds.~n", [Time/1000])
       end).
 
 automatic_build(St, SystemType) ->
@@ -183,7 +186,7 @@ broadcast_filechange([{Client, _SystemType}|Clients], Path, Type, Fileinfo, St) 
 	{ok, Binary} ->
 	    Client ! {filechange, Path, Fileinfo, Binary};
 	X ->
-	    io:format("Failed to read file ~s: ~p~n", [Path, X])
+	    log("Failed to read file ~s: ~p~n", [Path, X])
     end,
     broadcast_filechange(Clients, Path, Type, Fileinfo, St).
 
@@ -209,12 +212,12 @@ send_filelist_to_client(Client, St) ->
     F = fun(File) ->
 		send_fileinfo_to_client(File, Client)
 	end,
-    io:format("Sending file info to ~w (~w files)~n", [Client, length(St#state.files)]),
+    log("Sending file info to ~w (~w files)~n", [Client, length(St#state.files)]),
     lists:map(F, St#state.files).
 
 
 add_client(Pid, SystemType, St) ->
-    io:format("Registering client ~p (~p) at ~p~n", [Pid, SystemType, node(Pid)]),
+    log("Registering client ~p (~p) at ~p~n", [Pid, SystemType, node(Pid)]),
     time_call(
       fun() ->
 	      link(Pid),
@@ -223,7 +226,7 @@ add_client(Pid, SystemType, St) ->
 	      Pid ! fileinfo_complete
       end,
       fun(Time) -> 
-	      io:format("Sent file info to ~p (~g seconds)~n",
+	      log("Sent file info to ~p (~g seconds)~n",
 			[Pid, Time/1000])
       end),
     %% TODO: track pending_build state individually for each client
@@ -262,12 +265,12 @@ trigger_build([], _, Force) ->
 trigger_build([{Pid, SystemType}|Clients], St, Force) ->
     case catch get_build_message(St, SystemType, Force) of
 	{build, _, _, _} = Msg ->
-	    io:format("Triggering build on ~p (~p)~n", [Pid, SystemType]),
+	    log("Triggering build on ~p (~p)~n", [Pid, SystemType]),
 	    Pid ! Msg;
 	false ->
 	    false;
 	{'EXIT', {undef, [Fun|_]}} ->
-	    io:format("Missing method in source config module: ~p~n", [Fun])
+	    log("Missing method in source config module: ~p~n", [Fun])
     end,
     trigger_build(Clients, St, Force).
 
@@ -299,13 +302,13 @@ handle_client_exit(Pid, St) ->
     if NumClients == NumClients0 ->
 	    true;
        NumClients0 == 0 ->
-	    io:format("No clients left.~n", []);
+	    log("No clients left.~n", []);
        true ->
-	    io:format("Detected client exit. Remaining clients:~n", []),
+	    log("Detected client exit. Remaining clients:~n", []),
 	    lists:foreach(
 	      fun(Client) ->
 		      {Pid0, SystemType} = Client,
-		      io:format("Client ~p (system type ~p)~n",
+		      log("Client ~p (system type ~p)~n",
 				[Pid0, SystemType])
 	      end,
 	      St0#state.clients)
@@ -320,7 +323,7 @@ main(St) ->
 
 	%% Request file contents
 	{get_file, Client, Path} ->
-	    %% io:format("Sending file to client ~p (~p): ~p~n", [Client, node(Client), Path]),
+	    %% log("Sending file to client ~p (~p): ~p~n", [Client, node(Client), Path]),
 	    send_file_to_client(St#state.files, Client, Path),
 	    main(St);
 
@@ -335,7 +338,7 @@ main(St) ->
 		  });
 
 	{file_monitor, _Ref, {changed, Path, Type, FileInfo, _}} ->
-	    io:format("Changed: ~s (~w, ~w bytes)~n", 
+	    log("Changed: ~s (~w, ~w bytes)~n", 
 		      [Path, 
 		       FileInfo#file_info.mtime,
 		       FileInfo#file_info.size]),
@@ -353,10 +356,10 @@ main(St) ->
 	{build_complete, Pid, Status} ->
 	    {_, SystemType} = get_client(Pid, St),
 	    if Status == 0 ->
-		    io:format("Build completed successfully at ~p by ~p (~p)~n", 
+		    log("Build completed successfully at ~p by ~p (~p)~n", 
 			      [time(), Pid, SystemType]);
 	       true ->
-		    io:format("Build failed on ~p (~p)~n", [Pid, SystemType])
+		    log("Build failed on ~p (~p)~n", [Pid, SystemType])
 	    end,
 	    main(St);
 
@@ -374,7 +377,6 @@ main(St) ->
 	    main(St);
 
 	manual_build ->
-	    io:format("\rManually triggering build.~n", []),
 	    trigger_build(St, true),
 	    main(St);
 	

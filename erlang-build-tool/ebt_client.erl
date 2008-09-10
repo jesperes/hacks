@@ -9,19 +9,22 @@
 	  localcopy, 
 	  fileinfo_count = 0, 
 	  filecount = 0,
-	  pending_build = false,
+	  pending_builds = 0,
+	  pending_build_command = {},
 	  setup_phase = true}).
 
+log(Str, Args) ->
+    io:format("\rClient ### " ++ Str, Args).
 
 start([Host, LocalCopy|_]) ->
     crypto:start(),
 
-    io:format("Registering with server at ~s~n", [Host]),
+    log("Registering with server at ~s~n", [Host]),
     
     {ServerPid, NumFiles} = ebt_server:register_client(Host),
 
-    io:format("Server pid is: ~p~n", [ServerPid]),
-    io:format("Using local copy: ~p~n", [LocalCopy]),
+    log("Server pid is: ~p~n", [ServerPid]),
+    log("Using local copy: ~p~n", [LocalCopy]),
     
     filelib:ensure_dir(LocalCopy),
 
@@ -41,17 +44,17 @@ check_file(File, FileInfo, Sha, St) ->
 	    {ok, Binary} = file:read_file(LocalFile),
 	    LocalSha = crypto:sha(Binary),
 	    if LocalSha == Sha ->
-		    %% io:format("Local copy is up-to-date: ~p~n", [LocalFile]),
+		    %% log("Local copy is up-to-date: ~p~n", [LocalFile]),
 		    file:write_file_info(LocalFile, FileInfo);
 	       true ->
-		    io:format("Local copy is not up-to-date (sha sum mismatch): ~p~n", [LocalFile]),
+		    log("Requesting file (checksum): ~p~n", [LocalFile]),
 		    ebt_server:request_file(St#state.server, File)
 	    end;
 	{error, enoent} ->
-	    io:format("File does not exist: ~p~n", [File]),
+	    log("Requesting file (does not exist): ~p~n", [File]),
 	    ebt_server:request_file(St#state.server, File);
 	{error, X} ->
-	    io:format("Unknown error: ~p (~p)~n", [X, File])
+	    log("Unknown error: ~p (~p)~n", [X, File])
     end.
 	    
 write_file(File, FileInfo, Binary, St) ->
@@ -60,16 +63,16 @@ write_file(File, FileInfo, Binary, St) ->
     case file:write_file(LocalFile, Binary) of
 	ok ->
 	    ok = file:write_file_info(LocalFile, FileInfo),
-	    io:format(".");
+	    log("Updated: ~p~n", [LocalFile]);
 	X ->
-	    io:format("Failed to write file ~p: ~p~n", [X, LocalFile])
+	    log("Failed to write file ~p: ~p~n", [X, LocalFile])
     end.
 
 build_loop(Port, Parent, Buf) ->
     receive 
 	{_, {exit_status, Exit}} ->
 	    Parent ! {build_complete, Exit},
-	    io:format("Build completed: ~p~n", [Exit]),
+	    log("Build completed: ~p~n", [Exit]),
 	    build_loop(Port, Parent, Buf);
 	{_, {data, {eol, String}}} ->
 	    io:format("~s~n", [String]),
@@ -80,7 +83,7 @@ build_loop(Port, Parent, Buf) ->
 	    io:format("~s", [String]),
 	    build_loop(Port, Parent, Buf ++ String);
 	{'EXIT', _, Reason} ->
-	    io:format("Build driver terminated: ~p~n", [Reason]);
+	    log("Build driver terminated: ~p~n", [Reason]);
 	X ->
 	    erlang:display({unknown, X}),
 	    build_loop(Port, Parent, Buf)
@@ -91,19 +94,21 @@ open_build_port(Cmd, Dir) ->
 	      [{cd, Dir},
 	       {line, 100},
 	       {env, [{"PACK5_NOPROGRESS", "true"},
-		      {"PACK5_LOGLEVEL", "1"}]},
+		      {"PACK5_LOGLEVEL", "1"},
+		      {"LC_CTYPE", "C"}]},
 	       exit_status,
 	       hide,
 	       stderr_to_stdout]).
 
 execute_build(St, false, _Cmd, _Dir) ->
-    io:format("Automatic build disabled.~n", []),
+    log("Automatic build disabled.~n", []),
     St;
 
 execute_build(St, true, Cmd, Dir) ->
-    if St#state.pending_build ->
-	    io:format("Build already pending, ignoring build request.~n", []),
-	    St;
+    if St#state.pending_builds > 0 ->
+	    log("Build already pending, queuing build request.~n", []),
+	    St#state{pending_builds = St#state.pending_builds + 1,
+		     pending_build_command = {Cmd, Dir}};
        true ->
 	    Parent = self(),
 	    spawn(fun() ->
@@ -111,17 +116,22 @@ execute_build(St, true, Cmd, Dir) ->
 			  filelib:ensure_dir(AbsDir),
 			  file:make_dir(AbsDir),
 			  process_flag(trap_exit, true),
-			  io:format("Building: ~s~n", [Cmd]),
+			  log("Building: ~s~n", [Cmd]),
 			  Port = open_build_port(Cmd, AbsDir),
 			  build_loop(Port, Parent, [])
 		  end),
-	    St#state{pending_build = true}
+	    St#state{pending_builds = 0,
+		     pending_build_command = {Cmd, Dir}}
     end.
+
+execute_queued_builds(St) ->
+    {Cmd, Dir} = St#state.pending_build_command,
+    execute_build(St, true, Cmd, Dir).
 
 loop(St) ->
     receive
 	fileinfo_complete ->
-	    io:format("File info received (~p files)~n", [St#state.fileinfo_count]),
+	    log("File info received (~p files)~n", [St#state.fileinfo_count]),
 	    loop(St);
 
 	{filechange, File, Fileinfo, Binary} ->
@@ -141,7 +151,11 @@ loop(St) ->
 
 	{build_complete, Status} ->
 	    St#state.server ! {build_complete, self(), Status},
-	    loop(St#state{pending_build = false});
+	    if St#state.pending_builds > 0 ->
+		    loop(execute_queued_builds(St));
+	       true ->
+		    loop(St)
+	    end;
 
 	{child_output, String} ->
 	    St#state.server ! {build_output, self(), String},
@@ -149,7 +163,7 @@ loop(St) ->
 
 	{'EXIT', Pid, Reason} ->
 	    if Pid == St#state.server ->
-		    io:format("Build server exiting (~p). Exiting client.~n", [Reason]),
+		    log("Build server exiting (~p). Exiting client.~n", [Reason]),
 		    init:stop();
 	       true ->
 		    %% ignore other EXIT signals
@@ -160,7 +174,7 @@ loop(St) ->
 	    loop(St)
     after 2500 ->
 	    if St#state.setup_phase ->
-		    io:format("Setup phase complete. Listening for changes..~n", []),
+		    log("Setup phase complete. Listening for changes..~n", []),
 		    loop(St#state{setup_phase = false});
 	       true ->
 		    loop(St)
