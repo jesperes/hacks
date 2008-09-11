@@ -1,6 +1,6 @@
 -module(ebt_server).
 -compile(debug_info).
--export([start/0, start/1, register_client/1, request_file/2, build/0]).
+-export([start/0, start/1, register_client/1, request_file/2, build/0, log/1, log/2]).
 
 -include_lib("kernel/include/file.hrl").
 
@@ -8,8 +8,7 @@
 	  srcdir,
 	  files = [],
 	  clients = [],
-	  source_config_file,
-	  source_config_mod,
+	  source_config_mod = false,
 	  last_build = never,
 	  pending_build = true
 	  }).
@@ -18,24 +17,40 @@
 start() ->
     start(".").
 
+monitor_config_file_loop(File, Parent) ->
+    receive
+	_ -> 
+	    Parent ! config_file_changed,
+	    monitor_config_file_loop(File, Parent)
+    end.
+
+monitor_config_file(File) ->
+    log("Monitoring config file ~s for changes~n", [File]),
+    Parent = self(),
+    Pid = spawn(
+	    fun() ->
+		    monitor_config_file_loop(File, Parent)
+	    end),
+    file_monitor:monitor_file(File, Pid).
+
 start([SrcDir|_]) ->
     crypto:start(),
     code:add_patha("/home/jesperes/eunit/ebin"),
     
     SrcDirAbs = filename:absname(SrcDir),
-    {SrcConfigMod, File} = load_source_config_module(SrcDirAbs),
-    log("Loaded source config module: ~s~n", [File]),
-    %% io:format("Exclude pattern: ~w~n", [SrcConfigMod:get_excludes()]),
     file_monitor:start(),
     spawn(fun() ->
+		  log("Started server: ~w~n", [self()]),
 		  register(ebt_server, self()),
-		  St = #state{ 
-		    source_config_mod = SrcConfigMod,
-		    source_config_file = File,
-		    srcdir = SrcDirAbs },
-		  monitor_tree(self(), St),
+		  St = #state{ srcdir = SrcDirAbs },
+		  St0 = load_source_config(St),
+		  monitor_tree(self(), St0),
 		  process_flag(trap_exit, true),
-		  main(St) 
+		  
+		  ConfigFile = filename:absname_join(SrcDirAbs, "ebt_config.erl"),
+		  monitor_config_file(ConfigFile),
+		  
+		  main(St0) 
 	  end).
 
 %% Register a client.
@@ -60,10 +75,13 @@ build() ->
 log(Str, Args) ->
     io:format("\r### Server> " ++ Str, Args).
 
+log(Str) ->
+    log(Str, []).
+
 uname_m() ->
     S = os:cmd("uname -m"),
     list_to_atom(string:left(S, length(S) - 1)).
-    
+
 get_system_type() ->
     case os:type() of
 	{win32, _OsName} ->
@@ -74,40 +92,18 @@ get_system_type() ->
 	    log("Unknown system type: ~w~n", [X])
     end.
 
-get_source_file(SrcDir, File) ->
-    filename:absname_join(SrcDir, File).
-
-get_default_source_config_module() ->
-    "source_config.erl".
-
-load_default_source_config_module() ->
-    File = filename:absname(get_default_source_config_module()),
-    case c:c(File) of
+load_source_config(St) ->
+    SrcFile = St#state.srcdir ++ "/ebt_config.erl",
+    case c:c(SrcFile) of
 	{ok, Module} ->
-	    {Module, File};
-	X ->
-	    log("Failed to load (default) source module: ~w~n", [X]),
-	    throw(load_source_config)
-    end.
-
-load_source_config_module(SrcDir) ->
-    File = get_source_file(SrcDir, "ebt_config.erl"),
-    case c:c(File, [{outdir, SrcDir}]) of
-	{ok, Module} ->
-	    {Module, File};
-	_ ->
-	    load_default_source_config_module()
-    end.
-
-reload_source_config(St) ->
-    case c:c(St#state.source_config_file, {outdir, St#state.srcdir}) of
-	{ok, Module} ->
-	    log("Reloaded source config: ~s~n", [St#state.source_config_file]),
-	    St#state{source_config_mod = Module};
+	    log("Reloaded source config.~n", []),
+	    St#state{source_config_mod = Module,
+		     pending_build = true};
 	X ->
 	    log("Failed to reload source config: ~w~n", [X]),
 	    St
     end.
+
 
 time_call(Fun, ResFun) ->
     statistics(wall_clock),
@@ -116,20 +112,25 @@ time_call(Fun, ResFun) ->
     ResFun(Time).
 
 get_monitored_files(Dir, St) ->
-    SrcCfgMod = St#state.source_config_mod,
-    {ok, ParsedRE} = regexp:parse(SrcCfgMod:get_excludes()),
-    F = 
-	fun(F, AccIn) ->
-		{Files, Num, NumExcl} = AccIn,
-		case regexp:matches(F, ParsedRE) of
-		    {match, []} ->
-			{[F|Files], Num + 1, NumExcl};
-		    _ -> 
-			{Files, Num, NumExcl + 1}
-		end
-	end,
-    file:set_cwd(Dir),
-    filelib:fold_files(".", ".*", true, F, {[], 0, 0}).
+    case St#state.source_config_mod of
+	false ->
+	    log("*** Failed to load source config module.~n"),
+	    throw(error);
+	SrcCfgMod ->
+	    {ok, ParsedRE} = regexp:parse(SrcCfgMod:get_excludes()),
+	    F = 
+		fun(F, AccIn) ->
+			{Files, Num, NumExcl} = AccIn,
+			case regexp:matches(F, ParsedRE) of
+			    {match, []} ->
+				{[F|Files], Num + 1, NumExcl};
+			    _ -> 
+				{Files, Num, NumExcl + 1}
+			end
+		end,
+	    file:set_cwd(Dir),
+	    filelib:fold_files(".", ".*", true, F, {[], 0, 0})
+    end.
 
 monitor_file_or_dir(Node, Receiver) ->
     %% log("Monitoring: ~w~n", [Node]),
@@ -169,18 +170,16 @@ output_filter(St, SystemType, String) ->
     Mod:output_filter(SystemType, String).
 
 get_build_message(St, SystemType, false) ->
-    St0 = reload_source_config(St),
-    {St0, {build, 
-	   automatic_build(St, SystemType),
-	   build_command(St, SystemType), 
-	   build_dir(St, SystemType)}};
+    {St, {build, 
+	  automatic_build(St, SystemType),
+	  build_command(St, SystemType), 
+	  build_dir(St, SystemType)}};
 
 get_build_message(St, SystemType, true) ->
-    St0 = reload_source_config(St),
-    {St0, {build, 
-	   true,
-	   build_command(St0, SystemType), 
-	   build_dir(St0, SystemType)}}.
+    {St, {build, 
+	  true,
+	  build_command(St, SystemType), 
+	  build_dir(St, SystemType)}}.
 
 broadcast_filechange([], _, _, _, _) -> true;
 broadcast_filechange([{Client, _SystemType}|Clients], Path, Type, Fileinfo, St) ->
@@ -345,15 +344,21 @@ main(St) ->
 		  });
 
 	{file_monitor, _Ref, {changed, Path, Type, FileInfo, _}} ->
-	    log("Changed: ~s (~w, ~w bytes)~n", 
-		      [Path, 
-		       FileInfo#file_info.mtime,
-		       FileInfo#file_info.size]),
-	    broadcast_filechange(St#state.clients, Path, Type, FileInfo, St),
-	    main(St#state{
-		   last_build = erlang:now(),
-		   pending_build = true
-		  });
+	    %% ebt_config.erl is managed elsewhere.
+	    case string:str(Path, "ebt_config.erl") of
+		0 ->
+		    log("Changed: ~s (~w, ~w bytes)~n", 
+			[Path, 
+			 FileInfo#file_info.mtime,
+			 FileInfo#file_info.size]),
+		    broadcast_filechange(St#state.clients, Path, Type, FileInfo, St),
+		    main(St#state{
+			   last_build = erlang:now(),
+			   pending_build = true
+			  });
+		_ ->
+		    main(St)
+	    end;
 
 	{file_monitor, _Ref, {error, Path, _Type, _Info}} ->
 	    erlang:display({file_monitor, error, Path}),
@@ -384,14 +389,18 @@ main(St) ->
 	    end,
 	    main(St);
 
+	config_file_changed ->
+	    log("Config file changed. Reloading.~n", []),
+	    main(load_source_config(St));
+	
 	manual_build ->
-	    main(trigger_build(St, true));
+	    main(St#state{pending_build = true});
 	
 	X ->
-	    throw(X),
+	    erlang:display(X),
 	    main(St)
     
-    after 5000 ->
+    after 1000 ->
 	    if St#state.pending_build ->
 		    St0 = trigger_build(St);
 	       true ->
