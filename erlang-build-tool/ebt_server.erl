@@ -58,7 +58,7 @@ build() ->
 
 %%% INTERNAL
 log(Str, Args) ->
-    io:format("\rServer ### " ++ Str, Args).
+    io:format("\r### Server> " ++ Str, Args).
 
 uname_m() ->
     S = os:cmd("uname -m"),
@@ -100,12 +100,13 @@ load_source_config_module(SrcDir) ->
     end.
 
 reload_source_config(St) ->
-    %% log("Reloading source config.~n", []),
     case c:c(St#state.source_config_file, {outdir, St#state.srcdir}) of
-	{ok, _} ->
-	    true;
+	{ok, Module} ->
+	    log("Reloaded source config: ~s~n", [St#state.source_config_file]),
+	    St#state{source_config_mod = Module};
 	X ->
-	    log("Failed to reload source config: ~w~n", [X])
+	    log("Failed to reload source config: ~w~n", [X]),
+	    St
     end.
 
 time_call(Fun, ResFun) ->
@@ -168,17 +169,18 @@ output_filter(St, SystemType, String) ->
     Mod:output_filter(SystemType, String).
 
 get_build_message(St, SystemType, false) ->
-    reload_source_config(St),
-    {build, 
-     automatic_build(St, SystemType),
-     build_command(St, SystemType), 
-     build_dir(St, SystemType)};
+    St0 = reload_source_config(St),
+    {St0, {build, 
+	   automatic_build(St, SystemType),
+	   build_command(St, SystemType), 
+	   build_dir(St, SystemType)}};
+
 get_build_message(St, SystemType, true) ->
-    reload_source_config(St),
-    {build, 
-     true,
-     build_command(St, SystemType), 
-     build_dir(St, SystemType)}.
+    St0 = reload_source_config(St),
+    {St0, {build, 
+	   true,
+	   build_command(St0, SystemType), 
+	   build_dir(St0, SystemType)}}.
 
 broadcast_filechange([], _, _, _, _) -> true;
 broadcast_filechange([{Client, _SystemType}|Clients], Path, Type, Fileinfo, St) ->
@@ -259,21 +261,26 @@ trigger_build(St, false) ->
 	    end
     end.
 
-
-trigger_build([], _St, _Force) ->
-    true;
-trigger_build([{Pid, SystemType}|Clients], St, Force) ->
+dispatch_build(St, Pid, SystemType, Force) ->
     case catch get_build_message(St, SystemType, Force) of
-	{build, _, _, _} = Msg ->
+	{St0, {build, _, _, _} = Msg} ->
 	    log("Triggering build on ~w (~w)~n", [Pid, SystemType]),
-	    Pid ! Msg;
+	    Pid ! Msg,
+	    St0;
 	false ->
-	    false;
+	    false,
+	    St;
 	{'EXIT', {undef, [Fun|_]}} ->
-	    log("Missing method in source config module: ~w~n", [Fun])
-    end,
-    trigger_build(Clients, St, Force).
+	    log("Missing method in source config module: ~w~n", [Fun]),
+	    St
+    end.
+    
 
+trigger_build([], St, _Force) ->
+    St;
+trigger_build([{Pid, SystemType}|Clients], St, Force) ->
+    St0 = dispatch_build(St, Pid, SystemType, Force),
+    trigger_build(Clients, St0, Force).
 
 get_client(Pid, St) ->
     get_client0(St#state.clients, Pid).
@@ -368,6 +375,7 @@ main(St) ->
 	
 	{build_output, Pid, String} ->
 	    {_, SystemType} = get_client(Pid, St),
+	    %% log(">>> ~p ~s~n", [SystemType, String]),
 	    case catch output_filter(St, SystemType, String) of
 		false ->
 		    false;
@@ -377,18 +385,17 @@ main(St) ->
 	    main(St);
 
 	manual_build ->
-	    trigger_build(St, true),
-	    main(St);
+	    main(trigger_build(St, true));
 	
 	X ->
 	    throw(X),
 	    main(St)
     
-    after 1000 ->
+    after 5000 ->
 	    if St#state.pending_build ->
-		    trigger_build(St);
+		    St0 = trigger_build(St);
 	       true ->
-		    true
+		    St0 = St
 	    end,
-	    main(St#state{pending_build = false})
+	    main(St0#state{pending_build = false})
     end.

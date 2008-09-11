@@ -15,7 +15,7 @@
 	  setup_phase = true}).
 
 log(Str, Args) ->
-    io:format("\rClient ### " ++ Str, Args).
+    io:format("\r### Client> " ++ Str, Args).
 
 start([Host, LocalCopy|_]) ->
     crypto:start(),
@@ -180,7 +180,7 @@ loop(St) ->
 	{child_output, String} ->
 	    St#state.server ! {build_output, self(), String},
 	    loop(St);
-
+	
 	{'EXIT', Pid, Reason} ->
 	    if Pid == St#state.server ->
 		    log("Build server exiting (~w). Exiting client.~n", [Reason]),
