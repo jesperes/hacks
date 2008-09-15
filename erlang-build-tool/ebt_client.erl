@@ -14,6 +14,8 @@
 	  build_command = {},
 	  setup_phase = true}).
 
+log(Str) ->
+    log(Str, []).
 log(Str, Args) ->
     io:format("\r### Client> " ++ Str, Args).
 
@@ -47,7 +49,9 @@ is_local_file_uptodate(LocalFile, _LocalFileInfo, _RemoteFileInfo, RemoteSha) ->
 	    log("Failed to check local file: ~w~n", [Reason])
     end.
 
-check_file(File, RemoteFileInfo, RemoteSha, St) ->
+
+
+check_file({File, RemoteFileInfo, RemoteSha}, St) ->
     LocalFile = get_local_filename(File, St),
     case file:read_file_info(LocalFile) of
 	{ok, LocalFileInfo} ->	    %% file exists
@@ -65,7 +69,7 @@ check_file(File, RemoteFileInfo, RemoteSha, St) ->
 	{error, X} ->
 	    log("Unknown error: ~w (~s)~n", [X, File])
     end.
-	    
+
 verify_mtime(Path, Mtime) ->
     {ok, Fi} = file:read_file_info(Path),
     case Fi#file_info.mtime of
@@ -147,21 +151,56 @@ execute_build(St, true, Cmd, Dir) ->
 
 loop(St) ->
     receive
-	fileinfo_complete ->
-	    log("File info received (~w files)~n", [St#state.fileinfo_count]),
+	{initial_filelist, {Files, Dirs}} ->
+	    log("Got initial file list: ~w files, ~w dirs~n", [length(Files),
+							       length(Dirs)]),
+	    log("Updating directory structure...~n"),
+	    lists:map(fun(D) -> 
+			      filelib:ensure_dir(D),
+			      file:make_dir(D)
+		      end, Dirs),
+	    log("Updating files...~n"),
+	    lists:map(fun(F) -> check_file(F, St) end, Files),
 	    loop(St);
 
-	{filechange, File, Fileinfo, Binary} ->
-	    write_file(File, Fileinfo, Binary, St),
+	{file_changed, Path, FileInfo, Binary} ->
+	    write_file(Path, FileInfo, Binary, St),
 	    loop(St);
 
-	{fileinfo, File, FileInfo, Sha} ->
-	    check_file(File, FileInfo, Sha, St),
-	    loop(St#state{fileinfo_count = St#state.fileinfo_count+1});
-
-	{get_file, File, FileInfo, Binary} ->
-	    write_file(File, FileInfo, Binary, St),
+	{mkdir, Dir} ->
+	    log("Creating directory: ~s~n", [Dir]),
+	    LocalDir = get_local_filename(Dir, St),
+	    filelib:ensure_dir(LocalDir),
+	    file:make_dir(LocalDir),
 	    loop(St);
+	
+	{delete, File} ->
+	    LocalFile = get_local_filename(File, St),
+	    log("Deleting ~s~n", [LocalFile]),
+	    case filelib:is_dir(LocalFile) of
+		true ->
+		    case file:del_dir(LocalFile) of
+			ok ->
+			    log("Deleted directory: ~s~n", [File]),
+			    loop(St);
+			{error, Reason} ->
+			    log("Failed to delete directory: ~s~n", [Reason]),
+			    loop(St)
+		    end;
+		false ->
+		    case file:delete(LocalFile) of
+			ok ->
+			    log("Deleted file: ~s~n", [File]),
+			    loop(St);
+			{error, enoent} ->
+			    log("Ignoring delete_file request for nonexisting file: ~s~n",
+				[File]),
+			    loop(St);
+			{error, Reason} ->
+			    log("Failed to delete file: ~s~n", [Reason]),
+			    loop(St)
+		    end
+	    end;
 
 	{build, AutoBuild, BuildCmd, BuildDir} ->
 	    loop(execute_build(St, AutoBuild, BuildCmd, BuildDir));

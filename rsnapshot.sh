@@ -10,7 +10,7 @@ done
 
 if [ -d /media/backup-media ]; then
     echo Executing rsnapshot "$@"
-    exec rsnapshot "$@"
+    exec /usr/bin/rsnapshot "$@"
 else
     echo "Failed to find backup media."
     exit 1

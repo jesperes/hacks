@@ -7,6 +7,7 @@
 -record(state, {
 	  srcdir,
 	  files = [],
+	  dirs = [],
 	  clients = [],
 	  source_config_mod = false,
 	  last_build = never,
@@ -36,21 +37,22 @@ monitor_config_file(File) ->
 start([SrcDir|_]) ->
     crypto:start(),
     code:add_patha("/home/jesperes/eunit/ebin"),
-    
     SrcDirAbs = filename:absname(SrcDir),
     file_monitor:start(),
     spawn(fun() ->
 		  log("Started server: ~w~n", [self()]),
 		  register(ebt_server, self()),
-		  St = #state{ srcdir = SrcDirAbs },
-		  St0 = load_source_config(St),
-		  monitor_tree(self(), St0),
-		  process_flag(trap_exit, true),
+		  St0 = #state{ srcdir = SrcDirAbs },
+		  St = load_source_config(St0),
 		  
+		  %% Monitor the root directory
+		  file:set_cwd(SrcDirAbs),
+		  file_monitor:monitor_dir(".", self()),
+		  
+		  process_flag(trap_exit, true),
 		  ConfigFile = filename:absname_join(SrcDirAbs, "ebt_config.erl"),
 		  monitor_config_file(ConfigFile),
-		  
-		  main(St0) 
+		  main(St) 
 	  end).
 
 %% Register a client.
@@ -66,7 +68,7 @@ register_client(ServerHost) ->
     end.
 
 request_file(ServerPid, F) ->
-    ServerPid ! {get_file, self(), F}.
+    ServerPid ! {send_file, self(), F}.
 
 build() ->
     whereis(ebt_server) ! manual_build.
@@ -107,51 +109,57 @@ load_source_config(St) ->
 
 time_call(Fun, ResFun) ->
     statistics(wall_clock),
-    Fun(),
+    Value = Fun(),
     {_, Time} = statistics(wall_clock),
-    ResFun(Time).
+    ResFun(Time),
+    Value.
 
-get_monitored_files(Dir, St) ->
+%%% Returns true/false if File should be monitored
+file_monitor_filter(St, File) ->
     case St#state.source_config_mod of
 	false ->
-	    log("*** Failed to load source config module.~n"),
-	    throw(error);
+	    true;
 	SrcCfgMod ->
 	    {ok, ParsedRE} = regexp:parse(SrcCfgMod:get_excludes()),
-	    F = 
-		fun(F, AccIn) ->
-			{Files, Num, NumExcl} = AccIn,
-			case regexp:matches(F, ParsedRE) of
-			    {match, []} ->
-				{[F|Files], Num + 1, NumExcl};
-			    _ -> 
-				{Files, Num, NumExcl + 1}
-			end
-		end,
-	    file:set_cwd(Dir),
-	    filelib:fold_files(".", ".*", true, F, {[], 0, 0})
+	    case regexp:matches(File, ParsedRE) of
+		{match, []} ->
+		    true;
+		_ ->
+		    false
+	    end
     end.
 
-monitor_file_or_dir(Node, Receiver) ->
-    %% log("Monitoring: ~w~n", [Node]),
-    IsDir = filelib:is_dir(Node),
-    if IsDir ->
-	    file_monitor:monitor_dir(Node, Receiver);
-       true ->
-	    file_monitor:monitor_file(Node, Receiver) 
-    end.
+%% monitor_file(File, Receiver, DictIn) ->
+%%     Dir = filename:dirname(File),
+%%     DictOut = 
+%% 	case dict:is_key(Dir, DictIn) of
+%% 	    false ->
+%% 		log("Monitoring directory: ~s~n", [Dir]),
+%% 		file_monitor:monitor_dir(Dir, Receiver),
+%% 		dict:append(Dir, true, DictIn);
+%% 	    _ ->
+%% 		DictIn
+%% 	end,
+    
+%%     log("Monitoring: ~s~n", [File]),
+%%     file_monitor:monitor_file(File, Receiver),
+%%     DictOut.
 
-monitor_tree(Receiver, St) ->
-    time_call(
-      fun() ->
-	      log("Scanning directory for files to monitor: ~s~n", [St#state.srcdir]),
-	      {Files, NumFiles, NumExcl} = get_monitored_files(St#state.srcdir, St),
-	      log("Files to monitor: ~w (~w files excluded)~n", [NumFiles, NumExcl]),
-	      lists:map(fun(F) -> monitor_file_or_dir(F, Receiver) end, Files)
-      end,
-      fun(Time) ->
-	      log("Setup phase took ~g seconds.~n", [Time/1000])
-      end).
+
+%% monitor_tree(Receiver, St) ->
+%%     time_call(
+%%       fun() ->
+%% 	      log("Scanning directory for files to monitor: ~s~n", [St#state.srcdir]),
+%% 	      {Files, NumFiles, NumExcl} = get_monitored_files(St#state.srcdir, St),
+%% 	      log("Files to monitor: ~w (~w files excluded)~n", [NumFiles, NumExcl]),
+
+%% 	      lists:foldl(fun(F, DictIn) -> 
+%% 				  monitor_file(F, Receiver, DictIn)
+%% 			  end, dict:new(), Files)
+%%       end,
+%%       fun(Time) ->
+%% 	      log("Setup phase took ~g seconds.~n", [Time/1000])
+%%       end).
 
 automatic_build(St, SystemType) ->
     Mod = St#state.source_config_mod,
@@ -181,59 +189,25 @@ get_build_message(St, SystemType, true) ->
 	  build_command(St, SystemType), 
 	  build_dir(St, SystemType)}}.
 
-broadcast_filechange([], _, _, _, _) -> true;
-broadcast_filechange([{Client, _SystemType}|Clients], Path, Type, Fileinfo, St) ->
-    case file:read_file(Path) of
-	{ok, Binary} ->
-	    Client ! {filechange, Path, Fileinfo, Binary};
-	X ->
-	    log("Failed to read file ~s: ~w~n", [Path, X])
-    end,
-    broadcast_filechange(Clients, Path, Type, Fileinfo, St).
-
-send_file_to_client([], _, _) ->
-    true;
-send_file_to_client([F|_], Client, F) ->
-    {ok, Binary} = file:read_file(F),
-    {ok, FileInfo} = file:read_file_info(F),
-    Client ! {get_file, F, FileInfo, Binary};
-send_file_to_client([_|Files], Client, F) ->
-    send_file_to_client(Files, Client, F).
-
-
-%% Send a list of file info + checksums to the client so the 
-%% client then can decide which files it actually wants.
-send_fileinfo_to_client(File, Client) ->
-    {ok, FileInfo} = file:read_file_info(File),
-    {ok, Binary} = file:read_file(File),
-    Sha = crypto:sha(Binary),
-    Client ! {fileinfo, File, FileInfo, Sha}.
-
-send_filelist_to_client(Client, St) ->
-    F = fun(File) ->
-		send_fileinfo_to_client(File, Client)
-	end,
-    log("Sending file info to ~w (~w files)~n", [Client, length(St#state.files)]),
-    lists:map(F, St#state.files).
-
+get_initial_filelist(St) ->
+    {lists:map(fun(File) ->
+		       {ok, FileInfo} = file:read_file_info(File),
+		       {ok, Binary} = file:read_file(File),
+		       {File, FileInfo, crypto:sha(Binary)}
+	       end, St#state.files),
+     St#state.dirs}.
 
 add_client(Pid, SystemType, St) ->
     log("Registering client ~w (~w) at ~w~n", [Pid, SystemType, node(Pid)]),
-    time_call(
-      fun() ->
-	      link(Pid),
-	      Pid ! {ebt_server, self(), length(St#state.files)},
-	      send_filelist_to_client(Pid, St),
-	      Pid ! fileinfo_complete
-      end,
-      fun(Time) -> 
-	      log("Sent file info to ~w (~g seconds)~n",
-			[Pid, Time/1000])
-      end),
+    link(Pid),
+    Pid ! {ebt_server, self(), length(St#state.files)},
+    log("Sending initial filelist to ~p~n", [Pid]),
+    Pid ! {initial_filelist, get_initial_filelist(St)},
+    log("Done.~n"),
+    
     %% TODO: track pending_build state individually for each client
     St#state{ clients = [{Pid, SystemType}|St#state.clients],
 	      pending_build = true }.
-
 
 diff_time(A, B) ->
     {A1, A2, A3} = A,
@@ -321,48 +295,125 @@ handle_client_exit(Pid, St) ->
     end,
     St0.
 
+monitor_file_or_dir(St, File, Receiver) ->
+    case {file_monitor_filter(St, File), filelib:is_dir(File)} of
+	{false, _} ->
+	    false;
+	{true, true} ->
+	    log("Monitoring (dir): ~s~n", [File]),
+	    file_monitor:monitor_dir(File, Receiver);
+	{true, false} ->
+	    log("Monitoring (file): ~s~n", [File]),
+	    file_monitor:monitor_file(File, Receiver)
+    end.
+
+%% Add monitors for all entries in a directory
+monitor_dir_entry(St, Path, F) ->
+    case F of
+	{added, File} ->
+	    SubPath = filename:join(Path, File),
+	    monitor_file_or_dir(St, SubPath, self());
+	X ->
+	    log("Unknown: ~w~n", [X])
+    end.
+
+add_file(St, Path, AddMonitor) ->
+    case file_monitor_filter(St, Path) of
+	true ->
+	    case AddMonitor of
+		true ->
+		    monitor_file_or_dir(St, Path, self()),
+		    multicast_file(St, Path);
+		false ->
+		    []
+	    end,
+	    St#state{files = [Path|St#state.files]};
+	false ->
+	    log("*** Warning: added monitor for excluded file!~n", []),
+	    St
+    end.
+
+
+%%% When an entire file-tree is removed (or renamed), we are not
+%%% guaranteed that events are generated such that the directories can
+%%% be removed bottom-up.
+
+handle_file_changes(St, _Ref, {exists, Path, file, _FileInfo, []}) ->
+    add_file(St, Path, false);
+
+handle_file_changes(St, _Ref, {exists, Path, dir, _FileInfo, Files}) ->
+    lists:map(fun(F) -> monitor_dir_entry(St, Path, F) end, Files),
+    St#state{dirs = [Path|St#state.dirs]};
+
+handle_file_changes(St, _Ref, {changed, Path, file, _FileInfo, Files}) ->
+    log("Changed (file): ~s, ~w~n", [Path, Files]),
+    multicast_file(St, Path),
+    St;
+
+handle_file_changes(St, _Ref, {changed, Path, dir, _FileInfo, Files}) ->
+    log("Changed (dir): ~s, ~w~n", [Path, Files]),
+    lists:foldl(fun({Event, File}, StateIn) ->
+			case Event of
+			    added ->
+ 				add_file(StateIn, filename:join(Path, File), true);
+ 			    _ ->
+ 				StateIn
+ 			end
+ 		end, St, Files);
+
+handle_file_changes(St, Ref, {error, Path, Type, enoent}) ->
+    log("File has disappeared: ~s~n", [Path]),
+    file_monitor:demonitor(Ref),
+    multicast_delete(St, Path),
+    St#state{files = lists:delete(Path, St#state.files)};
+
+handle_file_changes(St, _Ref, X) ->
+    log("Unhandled change event: ~w~n", [X]),
+    St.
+
+file_changed_message(File) ->
+    {ok, Binary} = file:read_file(File),
+    {ok, FileInfo} = file:read_file_info(File),
+    {file_changed, File, FileInfo, Binary}.
+
+%%% Send a file to a specific client
+send_file(Client, File) ->
+    log("Sending ~s to ~p~n", [File, Client]),
+    Client ! file_changed_message(File).
+
+%%% Send a file to all clients
+multicast_file(St, File) ->
+    case filelib:is_dir(File) of
+	true ->
+	    multicast_mkdir(St, File);
+	false ->
+	    multicast(St, file_changed_message(File))
+    end.
+
+multicast_delete(St, File) ->
+    multicast(St, {delete, File}).
+    
+
+%%% Inform all clients that Dir should be created.
+multicast_mkdir(St, Dir) ->
+    multicast(St, {mkdir, Dir}).
+
+multicast(St, Msg) ->
+    lists:map(fun({Client, _}) -> Client ! Msg end, St#state.clients).
+
 main(St) ->
     receive
 	%% Register new client
 	{register, Pid, SystemType} ->
 	    main(add_client(Pid, SystemType, St));
-
-	%% Request file contents
-	{get_file, Client, Path} ->
-	    %% log("Sending file to client ~w (~w): ~w~n", [Client, node(Client), Path]),
-	    send_file_to_client(St#state.files, Client, Path),
+	
+	%% Client wants us to send them a file
+	{send_file, Client, Path} ->
+	    send_file(Client, Path),
 	    main(St);
 
-	%% Messages received from the file_monitor service
-	{file_monitor, _Ref, {exists, Path, Type, FileInfo, _}} ->
-	    Files = St#state.files,
-	    broadcast_filechange(St#state.clients, Path, Type, FileInfo, St),
-	    main(St#state{ 
-		   files = [Path|Files],
-		   last_build = erlang:now(),
-		   pending_build = true
-		  });
-
-	{file_monitor, _Ref, {changed, Path, Type, FileInfo, _}} ->
-	    %% ebt_config.erl is managed elsewhere.
-	    case string:str(Path, "ebt_config.erl") of
-		0 ->
-		    log("Changed: ~s (~w, ~w bytes)~n", 
-			[Path, 
-			 FileInfo#file_info.mtime,
-			 FileInfo#file_info.size]),
-		    broadcast_filechange(St#state.clients, Path, Type, FileInfo, St),
-		    main(St#state{
-			   last_build = erlang:now(),
-			   pending_build = true
-			  });
-		_ ->
-		    main(St)
-	    end;
-
-	{file_monitor, _Ref, {error, Path, _Type, _Info}} ->
-	    erlang:display({file_monitor, error, Path}),
-	    main(St);
+	{file_monitor, Ref, Event} ->
+	    main(handle_file_changes(St, Ref, Event));
 
 	%% Recevied when a client completes a build
 	{build_complete, Pid, Status} ->
@@ -375,7 +426,8 @@ main(St) ->
 	    end,
 	    main(St);
 
-	{'EXIT', Pid, _} ->
+	{'EXIT', Pid, Reason} ->
+	    log("EXIT(~p): ~w~n", [Pid, Reason]),
 	    main(handle_client_exit(Pid, St));
 	
 	{build_output, Pid, String} ->
