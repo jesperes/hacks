@@ -140,6 +140,9 @@ execute_build(St, true, Cmd, Dir) ->
 			  filelib:ensure_dir(AbsDir),
 			  file:make_dir(AbsDir),
 			  process_flag(trap_exit, true),
+			  log("************************************************************~n"),
+			  log("************************************************************~n"),
+			  log("************************************************************~n"),
 			  log("Building: ~s~n", [Cmd]),
 			  Port = open_build_port(Cmd, AbsDir),
 			  build_loop(Port, Parent, [])
