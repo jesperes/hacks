@@ -12,8 +12,8 @@
   <property name="MailLogger.failure.subject" value="Backup failure"/>
   
   <target name="backup">
-    <exec
-       executable="c:/cygwin/bin/rsync.exe">
+    <exec executable="c:/cygwin/bin/rsync.exe">
+
       <!-- rsync options -->
       <arg value="-rultoi"/>
       <arg value="--delete"/>
@@ -34,6 +34,7 @@
       <arg value="--exclude=Temp"/>
       <arg value="--exclude=SecuROM"/>
       <arg value="--exclude=Application Data/Google/Google Desktop"/>
+      <arg value="--exclude=Application Data/Google/Chrome"/>      
       <arg value="--exclude=Application Data/Last.fm/**/cache"/>
       <arg value="--exclude=RECYCLER"/>
       <arg value="--exclude=System Volume Information"/>
@@ -44,7 +45,8 @@
       <arg value="--exclude=*.bmc"/>
       <arg value="--exclude=Picasa2/**/*.db"/>
       <arg value="--exclude=**/video/ISO"/>
-      <arg value="--exclude=Google/Chrome/**/History Index*/"/>
+      <arg value="--exclude=iPod Photo Cache"/>
+      <arg value="--exclude=Torrents"/>
 
       <!-- source directories -->
       <arg value="/cygdrive/e"/>
