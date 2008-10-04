@@ -2,12 +2,11 @@
 
 require 'fileutils'
 require 'net/smtp'
-require 'rmail'
 
 include FileUtils
 include FileTest
 
-BACKUPDIR = "g:/"
+BACKUPDIR = "D:/"
 SMTP_SERVERS = ["exchange.iar.se", "mailout.comhem.se"]
 MAILFROM = "jesper@eskilson.se"
 MAILTO = "jesper@eskilson.se"
@@ -25,7 +24,8 @@ logfile = File.join(BACKUPDIR, "rsync.log")
 
 rsync = "rsync"
 rsync_opts = [
-  "-rltoqi",
+  "-n",
+  "-vrultoi",
   "--delete",
   "--delete-excluded",
   "--modify-window=1",
@@ -52,46 +52,43 @@ exclude = [
   "Application Data/Last.fm/**/cache",
   "RECYCLER",
   "System Volume Information",
-  "e/video",
-  "e/Torrents",
   ".plugins/*/.history",
   "Mozilla/**/Cache",
   "Mozilla/**/Profiles/*/places.sqlite*",
   "*.gcf",                      # Steam/Valve game files, usually very large
   "*.bmc",                      # Terminal server client bitmap cache
   "Picasa2/**/*.db",            # Picasa thumbnails
-  "ubuntu/disks/**",            # Ubuntu install is too large to backup
-  logfile
+  "**/video/ISO",               # Don't backup DVD ISO images
+  cygpath(logfile)
 ]
 
 mkdir_p target
 
 messages = []
 
-cmd = [rsync]
-cmd.concat(rsync_opts)
-cmd.concat(exclude.collect { |d| "--exclude=#{d}" })
-
-sources.each do |src|
-  cmd << cygpath(src)
-end
+cmd = []
+cmd += rsync_opts
+cmd += exclude.collect { |d| "--exclude=#{d}" }
+cmd += sources.collect { |src| cygpath(src) }
 cmd << cygpath(target)
 
-cmdstring = cmd.collect { |arg| "\"#{arg}\"" }.join(" ")
-cmdstring += " >#{logfile} 2>&1"
+message = ""
+message += "To: #{MAILTO}\n"
+message += "From: #{MAILFROM}\n"
+message += "Subject: Backup report (#{ENV['COMPUTERNAME']})\n"
+message += "\n"
 
-puts "Running backup script."
-puts
-puts "Backing up:"
-sources.each { |d| puts "   #{d}" }
-puts
-puts "To: #{target}"
+cmdstring = cmd.collect { |arg| "\"#{arg}\"" }.join(" ")
 
 t0 = Time.now
-puts "Backup started on: #{t0}"
-status = system(cmdstring)
+IO.popen("rsync " + cmdstring).readlines do |line|
+  message += line
+  puts message
+end
 t0 = Time.now - t0
-puts "Backup finished on: #{t0}"
+
+message += "Time taken: #{t0} seconds\n"
+status = true
 
 if status
   File.open(File.join(BACKUPDIR, "last-successful-backup"), "w") do |io|
@@ -101,22 +98,15 @@ else
   File.open(File.join(BACKUPDIR, "last-failed-backup"), "w") do |io|
     io.puts("Last failed backup (code #{status}) on #{Time.now} took #{t0} seconds.")
   end
+end
 
-  message = RMail::Message.new()
-  message.header['To'] = MAILTO
-  message.header['From'] = MAILFROM
-  message.header['Subject'] = "Backup report (#{ENV['COMPUTERNAME']})"
 
-  message.body = "Time taken: #{t0} seconds"
-  message.body += "Status: #{status}\n"
-  File.open(logfile) do |io|
-    message.body += io.read
-  end
-
+if true # not status
   sent = false
   SMTP_SERVERS.each do |server|
     begin
       puts "Sending mail (using #{server})"
+
       Net::SMTP.start(server, 25) do |smtp|
         smtp.send_message(message.to_s, MAILFROM, MAILTO)
         sent = true
