@@ -2,7 +2,9 @@
    name="homebackup" 
    default="backup">
   <property name="backupdir" value="/cygdrive/d/backup"/>
-  <property name="incrdir" value="/cygdrive/d/backup-incr"/>
+  <property name="incr.dir" value="/cygdrive/d/backup-incr"/>
+  <property name="incr.dayssaved" value="30"/>
+  <property name="cygwin" value="c:/cygwin"/>
 
   <property name="MailLogger.mailhost" value="mailout.comhem.se"/>
   <property name="MailLogger.from" value="jesper@eskilson.se"/>
@@ -12,16 +14,21 @@
   <property name="MailLogger.failure.subject" value="Backup failure"/>
   
   <target name="backup">
-    <exec executable="c:/cygwin/bin/rsync.exe">
+    <tstamp/>
+    <property name="incr.dir.full"
+	      value="${incr.dir}/${DSTAMP}-${TSTAMP}"/>
+
+    <echo>Rsyncing...</echo>
+    <exec executable="${cygwin}/bin/rsync.exe">
 
       <!-- rsync options -->
-      <arg value="-rultoi"/>
+      <arg value="-rultov"/>
       <arg value="--delete"/>
       <arg value="--delete-excluded"/>
       <arg value="--modify-window=1"/>
       <arg value="--backup"/>
       <arg value="--backup-dir"/>
-      <arg value="${incrdir}"/>
+      <arg value="${incr.dir.full}"/>
 
       <!-- exclude rules -->
       <arg value="--exclude=NTUSER.DAT"/>
@@ -46,7 +53,10 @@
       <arg value="--exclude=Picasa2/**/*.db"/>
       <arg value="--exclude=**/video/ISO"/>
       <arg value="--exclude=iPod Photo Cache"/>
-      <arg value="--exclude=Torrents"/>
+      <arg value="--exclude=auto-save-list"/>
+      
+      <!-- don't backup torrents until they are complete -->
+      <arg value="--exclude=Torrents/Active"/>
 
       <!-- source directories -->
       <arg value="/cygdrive/e"/>
@@ -54,7 +64,29 @@
 
       <!-- target directory -->
       <arg value="${backupdir}/"/>
-
     </exec>
+
+    <echo>Removing old incrementals...</echo>
+
+    <!-- Remove incrementals older than ${incr.dayssaved} days. -->
+    <exec executable="${cygwin}/bin/find.exe">
+      <arg value="${incr.dir}/"/>
+      <arg value="-mindepth"/>
+      <arg value="1"/>
+      <arg value="-maxdepth"/>
+      <arg value="1"/>
+      <arg value="-type"/>
+      <arg value="d"/>
+      <arg value="-mtime"/>
+      <arg value="+${incr.dayssaved}"/>
+      <arg value="-print"/>
+      <arg value="-exec"/>
+      <arg value="rm"/>
+      <arg value="-r"/>
+      <arg value="{}"/>
+      <arg value=";"/>
+    </exec>
+
+    <echo>Done.</echo>
   </target>
 </project>
