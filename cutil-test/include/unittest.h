@@ -26,7 +26,7 @@ static int num_assertions = 0;
 
 #define UNITTEST_RUN(suite, test) 							\
 	do { 													\
-		printf("Suite %s, test %s: ", #suite, #test); 		\
+		printf("%10s:%-20s: ", #suite, #test); 		\
 		fflush(stdout); 									\
 		tests_run++;										\
 		if (__unittest__ ## suite ## __ ## test ()) { 	\
@@ -43,6 +43,7 @@ static int num_assertions = 0;
 	do { 													\
 		printf("Total tests: %d\n", tests_run);				\
 		printf("Failed tests: %d\n", tests_fail);			\
+		printf("Total assertions: %d\n", num_assertions);	\
 	} while (0)
 
 #define UNITTEST_STATUS tests_fail

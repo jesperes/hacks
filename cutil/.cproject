@@ -7,8 +7,8 @@
 <storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.config.gnu.cygwin.lib.debug.1070061597" moduleId="org.eclipse.cdt.core.settings" name="Debug">
 <externalSettings>
 <externalSetting>
-<entry flags="VALUE_WORKSPACE_PATH" kind="includePath" name="/libcutil"/>
-<entry flags="VALUE_WORKSPACE_PATH" kind="libraryPath" name="/libcutil/Debug"/>
+<entry flags="VALUE_WORKSPACE_PATH" kind="includePath" name="/cutil"/>
+<entry flags="VALUE_WORKSPACE_PATH" kind="libraryPath" name="/cutil/Debug"/>
 </externalSetting>
 </externalSettings>
 <extensions>
@@ -18,14 +18,14 @@
 </extensions>
 </storageModule>
 <storageModule moduleId="cdtBuildSystem" version="4.0.0">
-<configuration artifactExtension="a" artifactName="libcutil" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.staticLib" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.staticLib" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.cygwin.lib.debug.1070061597" name="Debug" parent="cdt.managedbuild.config.gnu.cygwin.lib.debug">
+<configuration artifactExtension="a" artifactName="cutil" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.staticLib" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.staticLib" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.cygwin.lib.debug.1070061597" name="Debug" parent="cdt.managedbuild.config.gnu.cygwin.lib.debug">
 <folderInfo id="cdt.managedbuild.config.gnu.cygwin.lib.debug.1070061597." name="/" resourcePath="">
 <toolChain id="cdt.managedbuild.toolchain.gnu.cygwin.lib.debug.722843477" name="Cygwin GCC" nonInternalBuilderId="cdt.managedbuild.target.gnu.builder.cygwin.lib.debug" superClass="cdt.managedbuild.toolchain.gnu.cygwin.lib.debug">
 <targetPlatform id="cdt.managedbuild.target.gnu.platform.cygwin.lib.debug.634979322" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.cygwin.lib.debug"/>
-<builder autoBuildTarget="all" buildPath="${workspace_loc:/libcutil/Debug}" cleanBuildTarget="clean" enableAutoBuild="true" id="org.eclipse.cdt.build.core.internal.builder.1569372879" incrementalBuildTarget="all" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="CDT Internal Builder" parallelBuildOn="true" parallelizationNumber="-1" superClass="org.eclipse.cdt.build.core.internal.builder"/>
+<builder autoBuildTarget="all" buildPath="${workspace_loc:/cutil/Debug}" cleanBuildTarget="clean" enableAutoBuild="true" id="org.eclipse.cdt.build.core.internal.builder.1569372879" incrementalBuildTarget="all" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="CDT Internal Builder" parallelBuildOn="true" parallelizationNumber="-1" superClass="org.eclipse.cdt.build.core.internal.builder"/>
 <tool id="cdt.managedbuild.tool.gnu.assembler.cygwin.lib.debug.1207843232" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.cygwin.lib.debug">
 <option id="gnu.both.asm.option.include.paths.1010963786" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
-<listOptionValue builtIn="false" value="&quot;${workspace_loc:/libcutil/include}&quot;"/>
+<listOptionValue builtIn="false" value="&quot;${workspace_loc:/cutil/include}&quot;"/>
 </option>
 <inputType id="cdt.managedbuild.tool.gnu.assembler.input.1391119396" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 </tool>
@@ -38,7 +38,7 @@
 <option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.cygwin.lib.debug.option.optimization.level.2013424054" name="Optimization Level" superClass="gnu.c.compiler.cygwin.lib.debug.option.optimization.level" valueType="enumerated"/>
 <option id="gnu.c.compiler.cygwin.lib.debug.option.debugging.level.1666847018" name="Debug Level" superClass="gnu.c.compiler.cygwin.lib.debug.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
 <option id="gnu.c.compiler.option.include.paths.1019249394" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
-<listOptionValue builtIn="false" value="&quot;${workspace_loc:/libcutil/include}&quot;"/>
+<listOptionValue builtIn="false" value="&quot;${workspace_loc:/cutil/include}&quot;"/>
 </option>
 <inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.cygwin.1465762342" superClass="cdt.managedbuild.tool.gnu.c.compiler.input.cygwin"/>
 </tool>
@@ -310,8 +310,8 @@
 <storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.config.gnu.cygwin.lib.release.2067411613" moduleId="org.eclipse.cdt.core.settings" name="Release">
 <externalSettings>
 <externalSetting>
-<entry flags="VALUE_WORKSPACE_PATH" kind="includePath" name="/libcutil"/>
-<entry flags="VALUE_WORKSPACE_PATH" kind="libraryPath" name="/libcutil/Release"/>
+<entry flags="VALUE_WORKSPACE_PATH" kind="includePath" name="/cutil"/>
+<entry flags="VALUE_WORKSPACE_PATH" kind="libraryPath" name="/cutil/Release"/>
 </externalSetting>
 </externalSettings>
 <extensions>
@@ -322,14 +322,15 @@
 </extensions>
 </storageModule>
 <storageModule moduleId="cdtBuildSystem" version="4.0.0">
-<configuration artifactExtension="a" artifactName="libcutil" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.staticLib" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.staticLib" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.cygwin.lib.release.2067411613" name="Release" parent="cdt.managedbuild.config.gnu.cygwin.lib.release">
+<configuration artifactExtension="a" artifactName="cutil" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.staticLib" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.staticLib" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.cygwin.lib.release.2067411613" name="Release" parent="cdt.managedbuild.config.gnu.cygwin.lib.release">
 <folderInfo id="cdt.managedbuild.config.gnu.cygwin.lib.release.2067411613." name="/" resourcePath="">
 <toolChain id="cdt.managedbuild.toolchain.gnu.cygwin.lib.release.2048661475" name="Cygwin GCC" superClass="cdt.managedbuild.toolchain.gnu.cygwin.lib.release">
 <targetPlatform id="cdt.managedbuild.target.gnu.platform.cygwin.lib.release.412222702" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.cygwin.lib.release"/>
-<builder buildPath="${workspace_loc:/libcutil/Release}" id="cdt.managedbuild.target.gnu.builder.cygwin.lib.release.2031957039" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.cygwin.lib.release"/>
+<builder buildPath="${workspace_loc:/cutil/Release}" id="cdt.managedbuild.target.gnu.builder.cygwin.lib.release.2031957039" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.cygwin.lib.release"/>
 <tool id="cdt.managedbuild.tool.gnu.assembler.cygwin.lib.release.209635947" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.cygwin.lib.release">
 <option id="gnu.both.asm.option.include.paths.1804209952" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
-<listOptionValue builtIn="false" value="&quot;${workspace_loc:/libcutil/include}&quot;"/>
+<listOptionValue builtIn="false" value="&quot;${workspace_loc:/cutil/include}&quot;"/>
+<listOptionValue builtIn="false" value="&quot;${workspace_loc:/cutil/include}&quot;"/>
 </option>
 <inputType id="cdt.managedbuild.tool.gnu.assembler.input.1933679181" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 </tool>
@@ -342,7 +343,8 @@
 <option defaultValue="gnu.c.optimization.level.most" id="gnu.c.compiler.cygwin.lib.release.option.optimization.level.365872918" name="Optimization Level" superClass="gnu.c.compiler.cygwin.lib.release.option.optimization.level" valueType="enumerated"/>
 <option id="gnu.c.compiler.cygwin.lib.release.option.debugging.level.1285228375" name="Debug Level" superClass="gnu.c.compiler.cygwin.lib.release.option.debugging.level" value="gnu.c.debugging.level.none" valueType="enumerated"/>
 <option id="gnu.c.compiler.option.include.paths.208056894" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
-<listOptionValue builtIn="false" value="&quot;${workspace_loc:/libcutil/include}&quot;"/>
+<listOptionValue builtIn="false" value="&quot;${workspace_loc:/cutil/include}&quot;"/>
+<listOptionValue builtIn="false" value="&quot;${workspace_loc:/cutil/include}&quot;"/>
 </option>
 <inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.cygwin.1096469100" superClass="cdt.managedbuild.tool.gnu.c.compiler.input.cygwin"/>
 </tool>
@@ -612,6 +614,6 @@
 </cconfiguration>
 </storageModule>
 <storageModule moduleId="cdtBuildSystem" version="4.0.0">
-<project id="libcutil.cdt.managedbuild.target.gnu.cygwin.lib.1466378861" name="Static Library" projectType="cdt.managedbuild.target.gnu.cygwin.lib"/>
+<project id="cutil.cdt.managedbuild.target.gnu.cygwin.lib.1466378861" name="Static Library" projectType="cdt.managedbuild.target.gnu.cygwin.lib"/>
 </storageModule>
 </cproject>

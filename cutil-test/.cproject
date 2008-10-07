@@ -21,8 +21,9 @@
 <builder autoBuildTarget="all" buildPath="${workspace_loc:/libcutil-test/Debug}" cleanBuildTarget="clean" enableAutoBuild="true" id="org.eclipse.cdt.build.core.internal.builder.247790027" incrementalBuildTarget="all" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="CDT Internal Builder" parallelBuildOn="true" parallelizationNumber="-1" superClass="org.eclipse.cdt.build.core.internal.builder"/>
 <tool id="cdt.managedbuild.tool.gnu.assembler.cygwin.exe.debug.1353698041" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.cygwin.exe.debug">
 <option id="gnu.both.asm.option.include.paths.1060300131" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
-<listOptionValue builtIn="false" value="&quot;${workspace_loc:/libcutil/include}&quot;"/>
-<listOptionValue builtIn="false" value="&quot;${workspace_loc:/libcutil-test/include}&quot;"/>
+<listOptionValue builtIn="false" value="&quot;${workspace_loc:/cutil}&quot;"/>
+<listOptionValue builtIn="false" value="&quot;${workspace_loc:/cutil-test/include}&quot;"/>
+<listOptionValue builtIn="false" value="&quot;${workspace_loc:/cutil/include}&quot;"/>
 </option>
 <inputType id="cdt.managedbuild.tool.gnu.assembler.input.2006174838" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 </tool>
@@ -35,8 +36,9 @@
 <option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.cygwin.exe.debug.option.optimization.level.1521989260" name="Optimization Level" superClass="gnu.c.compiler.cygwin.exe.debug.option.optimization.level" valueType="enumerated"/>
 <option id="gnu.c.compiler.cygwin.exe.debug.option.debugging.level.825938556" name="Debug Level" superClass="gnu.c.compiler.cygwin.exe.debug.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
 <option id="gnu.c.compiler.option.include.paths.492409048" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
-<listOptionValue builtIn="false" value="&quot;${workspace_loc:/libcutil/include}&quot;"/>
-<listOptionValue builtIn="false" value="&quot;${workspace_loc:/libcutil-test/include}&quot;"/>
+<listOptionValue builtIn="false" value="&quot;${workspace_loc:/cutil}&quot;"/>
+<listOptionValue builtIn="false" value="&quot;${workspace_loc:/cutil-test/include}&quot;"/>
+<listOptionValue builtIn="false" value="&quot;${workspace_loc:/cutil/include}&quot;"/>
 </option>
 <option id="gnu.c.compiler.option.warnings.pedantic.2016596258" name="Pedantic (-pedantic)" superClass="gnu.c.compiler.option.warnings.pedantic" value="true" valueType="boolean"/>
 <option id="gnu.c.compiler.option.warnings.toerrors.1928793374" name="Warnings as errors (-Werror)" superClass="gnu.c.compiler.option.warnings.toerrors" value="true" valueType="boolean"/>
@@ -44,6 +46,12 @@
 <inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.cygwin.74883488" superClass="cdt.managedbuild.tool.gnu.c.compiler.input.cygwin"/>
 </tool>
 <tool id="cdt.managedbuild.tool.gnu.c.linker.cygwin.exe.debug.1919500489" name="Cygwin C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.cygwin.exe.debug">
+<option id="gnu.c.link.option.paths.2074084604" name="Library search path (-L)" superClass="gnu.c.link.option.paths" valueType="libPaths">
+<listOptionValue builtIn="false" value="&quot;${workspace_loc:/cutil/Debug}&quot;"/>
+</option>
+<option id="gnu.c.link.option.libs.1250926161" name="Libraries (-l)" superClass="gnu.c.link.option.libs" valueType="libs">
+<listOptionValue builtIn="false" value="cutil"/>
+</option>
 <inputType id="cdt.managedbuild.tool.gnu.c.linker.input.796556150" superClass="cdt.managedbuild.tool.gnu.c.linker.input">
 <additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 <additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -308,9 +316,17 @@
 </profile>
 </scannerConfigBuildInfo>
 </storageModule>
-<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+<storageModule moduleId="org.eclipse.cdt.core.externalSettings">
+<externalSettings containerId="cutil;" factoryId="org.eclipse.cdt.core.cfg.export.settings.sipplier">
+<externalSetting>
+<entry flags="VALUE_WORKSPACE_PATH" kind="includePath" name="/cutil"/>
+<entry flags="VALUE_WORKSPACE_PATH" kind="libraryPath" name="/cutil/Debug"/>
+</externalSetting>
+</externalSettings>
+</storageModule>
 <storageModule moduleId="org.eclipse.cdt.core.language.mapping"/>
 <storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
+<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 </cconfiguration>
 <cconfiguration id="cdt.managedbuild.config.gnu.cygwin.exe.release.167594887">
 <storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.config.gnu.cygwin.exe.release.167594887" moduleId="org.eclipse.cdt.core.settings" name="Release">
@@ -333,6 +349,8 @@
 <option id="gnu.both.asm.option.include.paths.1058250154" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
 <listOptionValue builtIn="false" value="&quot;${workspace_loc:/libcutil/include}&quot;"/>
 <listOptionValue builtIn="false" value="&quot;${workspace_loc:/libcutil-test/include}&quot;"/>
+<listOptionValue builtIn="false" value="&quot;${workspace_loc:/cutil-test/include}&quot;"/>
+<listOptionValue builtIn="false" value="&quot;${workspace_loc:/cutil/include}&quot;"/>
 </option>
 <inputType id="cdt.managedbuild.tool.gnu.assembler.input.284649925" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 </tool>
@@ -347,6 +365,8 @@
 <option id="gnu.c.compiler.option.include.paths.1429143579" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 <listOptionValue builtIn="false" value="&quot;${workspace_loc:/libcutil/include}&quot;"/>
 <listOptionValue builtIn="false" value="&quot;${workspace_loc:/libcutil-test/include}&quot;"/>
+<listOptionValue builtIn="false" value="&quot;${workspace_loc:/cutil-test/include}&quot;"/>
+<listOptionValue builtIn="false" value="&quot;${workspace_loc:/cutil/include}&quot;"/>
 </option>
 <inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.cygwin.1695272528" superClass="cdt.managedbuild.tool.gnu.c.compiler.input.cygwin"/>
 </tool>
@@ -618,6 +638,7 @@
 <storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 <storageModule moduleId="org.eclipse.cdt.core.language.mapping"/>
 <storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
+<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 </cconfiguration>
 </storageModule>
 <storageModule moduleId="cdtBuildSystem" version="4.0.0">
