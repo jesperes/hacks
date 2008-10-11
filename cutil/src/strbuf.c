@@ -10,8 +10,9 @@
 
 void sb_init(strbuf_t *s)
 {
-	s->buf = "";
+	s->buf = NULL;
 	s->length = 0;
+	s->bufsize = 0;
 }
 
 size_t sb_length(strbuf_t *s) {
@@ -19,31 +20,52 @@ size_t sb_length(strbuf_t *s) {
 }
 
 const char *sb_buf(strbuf_t *s) {
-	return s->buf;
-}
-
-void sb_assign_cstr(strbuf_t *s, const char *cstr)
-{
-	size_t n = strlen(cstr);
-	sb_ensure_length(s, n);
-	memcpy(s->buf, cstr, n);
-
-	// the allocated buffer will be n+1 bytes long
-	s->buf[n] = 0;	// there may be trailing junk in buf
-	s->length = n;
-}
-
-void sb_clear(strbuf_t *s) {
-	free(s->buf);
-	s->buf = "";
-	s->length = 0;
+	if (s->buf == NULL) {
+		return "";
+	} else {
+		return s->buf;
+	}
 }
 
 void sb_ensure_length(strbuf_t *str, size_t len)
 {
-	if (str->length < len) {
-		str->buf = realloc(str->buf, len + 1);
-		str->buf[len-1] = 0;
-		str->length = len;
+	if (str->bufsize <= len) {
+		str->bufsize = len + 1;
+		str->buf = realloc(str->buf, str->bufsize);
+		str->buf[len] = 0;
 	}
+}
+
+void sb_set_cstr(strbuf_t *s, const char *cstr)
+{
+	size_t n = strlen(cstr);
+	sb_ensure_length(s, n);
+	memcpy(s->buf, cstr, n);
+	s->buf[n] = 0;
+	s->length = n;
+}
+
+void sb_set(strbuf_t *s, strbuf_t *from)
+{
+	size_t n = sb_length(from);
+	sb_ensure_length(s, n);
+	memcpy(s->buf, sb_buf(from), n);
+	s->buf[n] = 0;
+	s->length = n;
+}
+
+void sb_clear(strbuf_t *s)
+{
+	free(s->buf);
+	s->buf = NULL;
+	s->length = 0;
+}
+
+char *sb_detach(strbuf_t *s)
+{
+	char *buf = s->buf;
+	s->buf = NULL;
+	s->length = 0;
+	s->bufsize = 0;
+	return buf;
 }
