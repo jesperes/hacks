@@ -12,38 +12,39 @@
 </externalSetting>
 </externalSettings>
 <extensions>
-<extension id="org.eclipse.cdt.core.Cygwin_PE" point="org.eclipse.cdt.core.BinaryParser"/>
+<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
 <extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 <extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+<extension id="org.eclipse.cdt.core.MakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 </extensions>
 </storageModule>
 <storageModule moduleId="cdtBuildSystem" version="4.0.0">
 <configuration artifactExtension="a" artifactName="cutil" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.staticLib" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.staticLib" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.cygwin.lib.debug.1070061597" name="Debug" parent="cdt.managedbuild.config.gnu.cygwin.lib.debug">
 <folderInfo id="cdt.managedbuild.config.gnu.cygwin.lib.debug.1070061597." name="/" resourcePath="">
-<toolChain id="cdt.managedbuild.toolchain.gnu.cygwin.lib.debug.722843477" name="Cygwin GCC" nonInternalBuilderId="cdt.managedbuild.target.gnu.builder.cygwin.lib.debug" superClass="cdt.managedbuild.toolchain.gnu.cygwin.lib.debug">
-<targetPlatform id="cdt.managedbuild.target.gnu.platform.cygwin.lib.debug.634979322" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.cygwin.lib.debug"/>
-<builder autoBuildTarget="all" buildPath="${workspace_loc:/cutil/Debug}" cleanBuildTarget="clean" enableAutoBuild="true" id="org.eclipse.cdt.build.core.internal.builder.1569372879" incrementalBuildTarget="all" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="CDT Internal Builder" parallelBuildOn="true" parallelizationNumber="-1" superClass="org.eclipse.cdt.build.core.internal.builder"/>
-<tool id="cdt.managedbuild.tool.gnu.assembler.cygwin.lib.debug.1207843232" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.cygwin.lib.debug">
-<option id="gnu.both.asm.option.include.paths.1010963786" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
+<toolChain id="cdt.managedbuild.toolchain.gnu.base.702001321" name="Linux GCC" superClass="cdt.managedbuild.toolchain.gnu.base">
+<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.target.gnu.platform.base.533643610" name="Debug Platform" osList="linux,hpux,aix,qnx" superClass="cdt.managedbuild.target.gnu.platform.base"/>
+<builder buildPath="${workspace_loc:/cutil/Debug}" enableAutoBuild="true" id="cdt.managedbuild.target.gnu.builder.base.716283848" name="Gnu Make Builder.Debug" parallelBuildOn="true" parallelizationNumber="-1" superClass="cdt.managedbuild.target.gnu.builder.base"/>
+<tool id="cdt.managedbuild.tool.gnu.archiver.base.1057115458" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
+<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.1029910703" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
+<option id="gnu.cpp.compiler.option.optimization.level.845135769" superClass="gnu.cpp.compiler.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
+<option id="gnu.cpp.compiler.option.debugging.level.404450772" superClass="gnu.cpp.compiler.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
+</tool>
+<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.713859110" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">
+<option id="gnu.c.compiler.option.include.paths.1777358002" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 <listOptionValue builtIn="false" value="&quot;${workspace_loc:/cutil/include}&quot;"/>
 </option>
-<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1391119396" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.option.optimization.level.1660561194" superClass="gnu.c.compiler.option.optimization.level" valueType="enumerated"/>
+<option id="gnu.c.compiler.option.debugging.level.1124405925" superClass="gnu.c.compiler.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
+<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1993491716" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 </tool>
-<tool id="cdt.managedbuild.tool.gnu.archiver.cygwin.lib.debug.1040265245" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.cygwin.lib.debug"/>
-<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.cygwin.lib.debug.1195154674" name="Cygwin C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.cygwin.lib.debug">
-<option id="gnu.cpp.compiler.cygwin.lib.debug.option.optimization.level.1369500998" name="Optimization Level" superClass="gnu.cpp.compiler.cygwin.lib.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
-<option id="gnu.cpp.compiler.cygwin.lib.debug.option.debugging.level.475738684" name="Debug Level" superClass="gnu.cpp.compiler.cygwin.lib.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
-</tool>
-<tool id="cdt.managedbuild.tool.gnu.c.compiler.cygwin.lib.debug.464687087" name="Cygwin C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.cygwin.lib.debug">
-<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.cygwin.lib.debug.option.optimization.level.2013424054" name="Optimization Level" superClass="gnu.c.compiler.cygwin.lib.debug.option.optimization.level" valueType="enumerated"/>
-<option id="gnu.c.compiler.cygwin.lib.debug.option.debugging.level.1666847018" name="Debug Level" superClass="gnu.c.compiler.cygwin.lib.debug.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
-<option id="gnu.c.compiler.option.include.paths.1019249394" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+<tool id="cdt.managedbuild.tool.gnu.c.linker.base.1934929069" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.base"/>
+<tool id="cdt.managedbuild.tool.gnu.cpp.linker.base.709930008" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.base"/>
+<tool id="cdt.managedbuild.tool.gnu.assembler.base.1649407424" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.base">
+<option id="gnu.both.asm.option.include.paths.767983813" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
 <listOptionValue builtIn="false" value="&quot;${workspace_loc:/cutil/include}&quot;"/>
 </option>
-<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.cygwin.1465762342" superClass="cdt.managedbuild.tool.gnu.c.compiler.input.cygwin"/>
+<inputType id="cdt.managedbuild.tool.gnu.assembler.input.934753012" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 </tool>
-<tool id="cdt.managedbuild.tool.gnu.c.linker.cygwin.base.2093378331" name="Cygwin C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.cygwin.base"/>
-<tool id="cdt.managedbuild.tool.gnu.cpp.linker.cygwin.base.204528211" name="Cygwin C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.cygwin.base"/>
 </toolChain>
 </folderInfo>
 <sourceEntries>
