@@ -3,7 +3,7 @@
    default="backup">
   <property name="backupdir" value="/cygdrive/d/backup"/>
   <property name="incr.dir" value="/cygdrive/d/backup-incr"/>
-  <property name="incr.dayssaved" value="30"/>
+  <property name="incr.dayssaved" value="15"/>
   <property name="cygwin" value="c:/cygwin"/>
 
   <property name="MailLogger.mailhost" value="mailout.comhem.se"/>
@@ -22,7 +22,7 @@
     <exec executable="${cygwin}/bin/rsync.exe">
 
       <!-- rsync options -->
-      <arg value="-rultov"/>
+      <arg value="-rulto"/>
       <arg value="--delete"/>
       <arg value="--delete-excluded"/>
       <arg value="--modify-window=1"/>
