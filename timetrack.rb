@@ -5,8 +5,21 @@ require 'digest/sha1'
 
 include FileTest
 
-def from_tod(time)
+def make_time(date, tod)
+  if tod.kind_of? Time
+    hh = tod.hour
+    mm = tod.min
+  else
+    tod = tod.to_i
+    hh = (tod / 100).to_i
+    mm = (tod % 100)
+  end
   
+  array = date.to_a
+  array[2] = hh
+  array[1] = mm
+  array[0] = 0
+  return Time.local(*array)
 end
 
 # Return time of day as an integer
@@ -21,12 +34,12 @@ def get_tod(time)
     raise "Type error: #{time.inspect}"
   end
   
-  # puts sprintf("tod(%s) = %d", time.to_s, tod)
   return tod
 end
 
 def format_duration(t)
   hh = (t / 3600).to_i
+  t = t - hh * 3600
   mm = (t / 60).to_i
   
   return sprintf("%02d:%02d", hh, mm)
@@ -34,7 +47,7 @@ end
 
 def short_date(time)
   return "" unless time
-  time.strftime("%b %d %H:%M")
+  time.strftime("%Y-%m-%d %H:%M")
 end
 
 
@@ -76,6 +89,7 @@ class WorkBlock
       puts "Workblock is not currently active."
     else
       @to = time
+      puts "Ending workblock #{@what} at #{short_date(@to)}"
     end
   end
 
@@ -132,6 +146,8 @@ class WorkDB
       @current_date = Time.now
     end
 
+    puts "Current date: #{@current_date.strftime("%Y-%m-%d")}"
+    
     objs = @yaml_obj["workblocks"]
     @workblocks = []
     objs.each do |o|
@@ -246,19 +262,25 @@ class WorkDB
     end
   end
 
-  def help(args)
+  def help(args = [])
     puts "Usage:"
   end
 
-  def quit(args)
+  def quit(args = [])
     exit
   end
 
-  def w(args)
+  def stop(args = [])
+    if @current_workblock != nil and @current_workblock.active
+      @current_workblock.stop
+    end
+  end
+
+  def w(args = [])
     work(args)
   end
 
-  def report(args)
+  def report(args = [])
     @workblocks.each do |wb|
       duration = wb.duration
       if duration
@@ -270,11 +292,18 @@ class WorkDB
     end
   end
   
-  def date(args)
+  def date(args = [])
+    s = args.shift
+    Tempfile.open("workdb") do |io|
+      io.close
+      system("touch --date=\"#{s}\" #{io.path}")
+      @current_date = File.stat(io.path).mtime
+    end
     
+    puts "Current date: #{@current_date.strftime("%Y-%m-%d")}"
   end
-
-  def work(args)
+  
+  def work(args = [])
     # Default: end current workblock, and start new one from now
     what = args.shift
     from = args.shift
@@ -287,10 +316,16 @@ class WorkDB
     if not what
       what = "unspecified"
     end
-
-    from = Time.now if not from
-    from = parse_time(from)
-    to = parse_time(to)
+    
+    if from
+      from = make_time(@current_date, from)
+    else
+      from = make_time(@current_date, Time.now)
+    end
+    
+    if to != nil
+      to = make_time(@current_date, to)
+    end
     
     @current_workblock = WorkBlock.new(what ? what : "unspecified",
                                        from, to)
@@ -307,12 +342,10 @@ class WorkDB
   def run
     while true
       begin
-        parse_command(Readline.readline("command> "))
+        prompt = @current_date.strftime("%Y-%m-%d> ")
+        parse_command(Readline.readline(prompt))
       rescue Interrupt
-        if @current_workblock
-          puts "Stopping current work block: #{@current_workblock}"
-          @current_workblock.stop
-        end
+        stop
         raise
       end
     end
