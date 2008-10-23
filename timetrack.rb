@@ -2,6 +2,7 @@ require 'yaml'
 require 'readline'
 require 'tempfile'
 require 'digest/sha1'
+require 'thread'
 
 include FileTest
 
@@ -62,6 +63,14 @@ class WorkBlock
     @key = key ? key : Digest::SHA1.hexdigest(Time.now.to_f.to_s)
   end
 
+  def verify
+    if @to.to_f < @from.to_f
+      return false
+    end
+
+    return true
+  end
+
   # Returns the duration in hours
   def duration
     if @to and @from
@@ -100,23 +109,11 @@ class WorkBlock
   end
 end
 
-class WorkDBDaemon
-  def initialize(workdb)
-    @workdb = workdb
-    @state = nil
-    
-    while true 
-      now = Time.now
-      state = get_state(now)
-      if state != @state
-        puts "State change to: #{state}"
-        @state = state
-      end 
-      sleep(10)
-    end
-  end
-  
-  def get_state(time)
+class WorkDB
+  @@WORKDBRC = File.join(ENV["HOME"], ".workdbrc")
+  @@WORKDB = File.join(ENV["HOME"], ".workdb.yaml")
+
+  def get_state()
     if @workdb.is_during_lunch(time)
       :lunch
     elsif @workdb.is_during_work(time)
@@ -125,15 +122,11 @@ class WorkDBDaemon
       :free
     end
   end
-end
-
-class WorkDB
-  @@WORKDBRC = File.join(ENV["HOME"], ".workdbrc")
-  @@WORKDB = File.join(ENV["HOME"], ".workdb.yaml")
 
   def initialize
     @config = YAML::load_file(@@WORKDBRC)
-    
+    @state = nil
+
     if File.exists?(@@WORKDB)
       @yaml_obj = YAML::load_file(@@WORKDB)
     else
@@ -153,10 +146,15 @@ class WorkDB
     objs = @yaml_obj["workblocks"]
     @workblocks = []
     objs.each do |o|
-      @workblocks << WorkBlock.new(o["what"],
-                                   o["from"],
-                                   o["to"],
-                                   o["key"])
+      wb = WorkBlock.new(o["what"],
+                         o["from"],
+                         o["to"],
+                         o["key"])
+      if wb.verify
+        @workblocks << wb
+      else
+        puts "Skipping invalid workblock: #{wb}"
+      end
     end
 
     @wbmap = {}
@@ -165,20 +163,9 @@ class WorkDB
     end
     
     @current_workblock = @wbmap[@yaml_obj["current"]]
-
-    Thread.new(self) do |workdb|
-      begin
-        puts "Spawned deamon thread"
-        WorkDBDaemon.new(workdb)
-      rescue => msg
-        puts "Exception in daemon thread: #{msg}"
-        puts msg.backtrace.join("\n")
-      end
-    end
-
     at_exit { save }
   end
-  
+
   def save
     puts "Saving #{@workblocks.length} records to #{@@WORKDB}"
     
@@ -310,11 +297,11 @@ class WorkDB
     return sprintf("%d:%02d", hh, mm)
   end
 
-  def worked_today()
+  def worked_on_date(date = @current_date)
     hours = 0.0
     @workblocks.each do |wb|
-      next unless same_day(wb.from, @current_date)
-      if is_work(wb.what)
+      next unless same_day(wb.from, date)
+      if is_work(wb.what) and wb.duration
         hours += wb.duration
       end
     end
@@ -387,6 +374,12 @@ class WorkDB
     puts "Current date: #{@current_date.strftime("%Y-%m-%d")}"
   end
   
+  def todays_activities
+    @workblocks.collect do |wb|
+      same_day(wb.from, @current_date) ? wb : nil
+    end.compact
+  end
+
   def work(args = [])
     # Default: end current workblock, and start new one from now
     what = args.shift
@@ -404,7 +397,25 @@ class WorkDB
     if from
       from = make_time(@current_date, from)
     else
-      from = make_time(@current_date, Time.now)
+      if not @current_workblock
+        daybegin = get_daybegin
+        
+        if todays_activities.length == 0
+          puts "No activities registered today. Press ENTER to register from #{daybegin}."
+          puts "or enter \"now\" to register from now."
+
+          reply = Readline.readline("> ")
+          if reply.strip == ""
+            from = make_time(@current_date, daybegin)
+          elsif reply.strip == "now"
+            from = make_time(@current_date, Time.now)
+          end
+        end
+      end
+
+      if not from
+        from = make_time(@current_date, Time.now)
+      end
     end
     
     if to != nil
@@ -423,14 +434,54 @@ class WorkDB
     end
   end
 
+  def lunch(args = [])
+    from = args.shift
+    to = args.shift
+
+    from = make_time(@current_date, from ? from.to_i : get_lunch[0])
+    to = make_time(@current_date, to ? to.to_i : get_lunch[1])
+    
+    wb = WorkBlock.new("lunch", from, to)
+    @workblocks << wb
+    @current_workblock = wb
+
+    puts "Lunch: #{wb}"
+  end
+  
+  def check
+    # Check for missing lunch
+    lunch_start = make_time(@current_date, get_lunch[0])
+    if Time.now - lunch_start > 0
+      if @workblocks.collect do |wb|
+          wb.what == "lunch" ? wb : nil
+        end.compact.length == 0
+        puts
+        puts "Default lunch start time has passed."
+        puts "Use 'lunch' command to register lunch break."
+      end
+    end
+
+    # Validate workblocks
+    @workblocks.delete_if do |wb| 
+      if wb.verify
+        return false
+      else
+        puts "Deleting invalid workblock: #{wb}"
+        return true
+      end
+    end
+  end
+
   def run
     while true
       begin
+        check
+
         date = @current_date.strftime("%Y-%m-%d")
-        time_left_today = normal_daylength - worked_today
+        time_left_today = normal_daylength - worked_on_date(@current_date)
         prompt = sprintf("%s (worked %s, %s left)> ",
                          date,
-                         hour_decimal_to_hours_minutes(worked_today),
+                         hour_decimal_to_hours_minutes(worked_on_date(@current_date)),
                          hour_decimal_to_hours_minutes(time_left_today))
         parse_command(Readline.readline(prompt))
       rescue Interrupt
