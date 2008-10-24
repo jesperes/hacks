@@ -57,9 +57,18 @@ class WorkBlock
   attr_accessor :what, :from, :to, :key
 
   def initialize(what, from, to, key = nil)
-    @what = what                # what I'm doing
-    @from = from                # start time
-    @to = to                    # end time
+    @what = what                    # what I'm doing
+    @from = nil
+    @to = nil
+
+    if from != nil
+      @from = from.clone
+    end
+
+    if to != nil
+      @to = to.clone
+    end
+
     @key = key ? key : Digest::SHA1.hexdigest(Time.now.to_f.to_s)
   end
 
@@ -73,10 +82,16 @@ class WorkBlock
 
   # Returns the duration in hours
   def duration
-    if @to and @from
-      return (@to - @from)/3600.0
+    if @to == nil
+      to = Time.now
     else
-      nil
+      to = @to
+    end
+    
+    if to != nil and @from != nil
+      return (to - @from)/3600.0
+    else
+      raise "duration is 0!"
     end
   end
 
@@ -167,8 +182,6 @@ class WorkDB
   end
 
   def save
-    puts "Saving #{@workblocks.length} records to #{@@WORKDB}"
-    
     yaml_obj = { 
       "workblocks" => @workblocks.collect { |wb| wb.to_yaml },
       "current" => @current_workblock ? @current_workblock.key : nil,
@@ -211,13 +224,18 @@ class WorkDB
       return true
     end
   end
+
+  def is_after_lunch(time)
+    lunch_tod = get_lunch
+    
+    return (get_tod(time) > lunch_tod[1])
+  end
   
   def is_during_lunch(time)
     lunch_tod = get_lunch
     
-    return if 
-      get_tod(time) >= lunch_tod[0] and 
-      get_tod(time) < lunch_tod[1]
+    return (get_tod(time) >= lunch_tod[0] and 
+            get_tod(time) < lunch_tod[1])
   end
   
   def get_daybegin
@@ -239,6 +257,7 @@ class WorkDB
 
     start = make_time(@current_date, get_daybegin)
     stop = make_time(@current_date, get_dayend)
+
     return (stop - start - lunch_length)/3600
   end
   
@@ -336,9 +355,16 @@ class WorkDB
         puts "#{what}"
         blocks = whatmap[what].each do |wb|
           from = get_tod(wb.from)
-          to = get_tod(wb.to)
-
-          puts "   #{from} => #{to}"
+          inprogress = ""
+          if wb.to
+            to = get_tod(wb.to)
+          else
+            to = get_tod(Time.now)
+            inprogress = "active"
+          end
+          
+          puts sprintf("   %4s => %4s %s", from, to, inprogress)
+          
           daybegin = [from, daybegin].min
           dayend = [to, dayend].max
 
@@ -404,7 +430,7 @@ class WorkDB
 
         if todays_activities.length == 0
           puts "No activities registered today. Press ENTER to register from #{daybegin}."
-          puts "or enter \"now\" to register from now (#{make_tod(now)})."
+          puts "or enter \"now\" to register from now (#{get_tod(now)})."
 
           reply = Readline.readline("> ")
           if reply.strip == ""
@@ -440,14 +466,52 @@ class WorkDB
     from = args.shift
     to = args.shift
 
-    from = make_time(@current_date, from ? from.to_i : get_lunch[0])
-    to = make_time(@current_date, to ? to.to_i : get_lunch[1])
+    if from
+      from = make_time(@current_date, from)
+    else
+      from = make_time(@current_date, from ? from.to_i : get_lunch[0])
+    end
     
-    wb = WorkBlock.new("lunch", from, to)
-    @workblocks << wb
-    @current_workblock = wb
+    if to
+      to = make_time(@current_date, to ? to.to_i : get_lunch[1])
+    else
+      if is_after_lunch(Time.now)
+        puts
+        puts "Press ENTER to end lunch at #{get_lunch[1]}, or \"now\" to"
+        puts "end lunch now (#{get_tod(Time.now)})"
+        reply = Readline.readline("> ")
+        if not reply or reply.strip == ""
+          to = make_time(@current_date, get_lunch[1])
+        elsif reply == "now"
+          to = Time.now
+          return
+        end
+      else
+        # lunch in progress
+        to = nil
+      end
+    end
+    
+    if @current_workblock and @current_workblock.active
+      @current_workblock.stop(from)
+    end
 
-    puts "Lunch: #{wb}"
+    lunchwb = WorkBlock.new("lunch", from, to)
+    puts "Lunch: #{lunchwb}"
+
+    @workblocks << lunchwb
+
+    before_lunch = @current_workblock
+    if to != nil
+      after_lunch = WorkBlock.new(before_lunch.what, to, nil)
+      @workblocks << after_lunch
+      @current_workblock = after_lunch
+      puts "Continuing with #{after_lunch.what} after lunch."
+    else
+      # lunch is in progress
+      @current_workblock = lunchwb
+      puts "Lunch break is in progress."
+    end
   end
   
   def check
@@ -478,6 +542,7 @@ class WorkDB
     while true
       begin
         check
+        save
 
         date = @current_date.strftime("%Y-%m-%d")
         time_left_today = normal_daylength - worked_on_date(@current_date)
@@ -488,7 +553,6 @@ class WorkDB
                          hour_decimal_to_hours_minutes(time_left_today))
         parse_command(Readline.readline(prompt))
       rescue Interrupt
-        stop
         raise
       end
     end
