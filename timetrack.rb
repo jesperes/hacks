@@ -64,7 +64,7 @@ class WorkBlock
   end
 
   def verify
-    if @to.to_f < @from.to_f
+    if @to and @to.to_f < @from.to_f
       return false
     end
 
@@ -400,9 +400,11 @@ class WorkDB
       if not @current_workblock
         daybegin = get_daybegin
         
+        now = make_time(@current_date, Time.now)
+
         if todays_activities.length == 0
           puts "No activities registered today. Press ENTER to register from #{daybegin}."
-          puts "or enter \"now\" to register from now."
+          puts "or enter \"now\" to register from now (#{make_tod(now)})."
 
           reply = Readline.readline("> ")
           if reply.strip == ""
@@ -462,7 +464,7 @@ class WorkDB
     end
 
     # Validate workblocks
-    @workblocks.delete_if do |wb| 
+    @workblocks = @workblocks.delete_if do |wb| 
       if wb.verify
         return false
       else
@@ -479,8 +481,9 @@ class WorkDB
 
         date = @current_date.strftime("%Y-%m-%d")
         time_left_today = normal_daylength - worked_on_date(@current_date)
-        prompt = sprintf("%s (worked %s, %s left)> ",
+        prompt = sprintf("%s (current: %s, worked %s, %s left)> ",
                          date,
+                         @current_workblock ? @current_workblock.what : "none",
                          hour_decimal_to_hours_minutes(worked_on_date(@current_date)),
                          hour_decimal_to_hours_minutes(time_left_today))
         parse_command(Readline.readline(prompt))
