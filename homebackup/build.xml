@@ -3,7 +3,7 @@
    default="backup">
   <property name="backupdir" value="/cygdrive/d/backup"/>
   <property name="incr.dir" value="/cygdrive/d/backup-incr"/>
-  <property name="incr.dayssaved" value="15"/>
+  <property name="incr.dayssaved" value="30"/>
   <property name="cygwin" value="c:/cygwin"/>
 
   <property name="MailLogger.mailhost" value="mailout.comhem.se"/>
@@ -81,7 +81,7 @@
       <arg value="+${incr.dayssaved}"/>
       <arg value="-print"/>
       <arg value="-exec"/>
-      <arg value="rm"/>
+      <arg value="${cygwin}/bin/rm.exe"/>
       <arg value="-r"/>
       <arg value="{}"/>
       <arg value=";"/>
