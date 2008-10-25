@@ -159,8 +159,8 @@ loop(St) ->
 							       length(Dirs)]),
 	    log("Updating directory structure...~n"),
 	    lists:map(fun(D) -> 
-			      filelib:ensure_dir(D),
-			      file:make_dir(D)
+			      filelib:ensure_dir(get_local_filename(D, St)),
+			      file:make_dir(get_local_filename(D, St))
 		      end, Dirs),
 	    log("Updating files...~n"),
 	    lists:map(fun(F) -> check_file(F, St) end, Files),
