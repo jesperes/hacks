@@ -1,3 +1,5 @@
+<!-- Backup script using Cygwin's rsync/find/rm. -->
+ 
 <project 
    name="homebackup" 
    default="backup">
@@ -30,7 +32,10 @@
       <arg value="--backup-dir"/>
       <arg value="${incr.dir.full}"/>
 
-      <!-- exclude rules -->
+      <!-- Exclude rules: files/directories which should not be backed
+	   up, either because they are to big or because they are
+	   normally locked, which would cause rsync to fail.  -->
+
       <arg value="--exclude=NTUSER.DAT"/>
       <arg value="--exclude=ntuser.dat.LOG"/>
       <arg value="--exclude=UsrClass.dat"/>
@@ -54,8 +59,6 @@
       <arg value="--exclude=**/video/ISO"/>
       <arg value="--exclude=iPod Photo Cache"/>
       <arg value="--exclude=auto-save-list"/>
-      
-      <!-- don't backup torrents until they are complete -->
       <arg value="--exclude=Torrents/Active"/>
 
       <!-- source directories -->
@@ -87,6 +90,7 @@
       <arg value=";"/>
     </exec>
 
+    <!-- TODO run "du" to see how much space the backups are taking -->
     <echo>Done.</echo>
   </target>
 </project>
