@@ -27,4 +27,3 @@ sublists = []
   sublists << l[i..i+4]
 end
 puts sublists.collect { |sl| p = 1; sl.each { |n| p *= n }; p }.max
-
