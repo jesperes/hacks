@@ -151,10 +151,7 @@ class WorkDB
       }
     end
 
-    @current_date = @yaml_obj["date"]
-    if not @current_date
-      @current_date = Time.now
-    end
+    @current_date = Time.now
 
     puts "Current date: #{@current_date.strftime("%Y-%m-%d")}"
     puts "Day length: #{hour_decimal_to_hours_minutes(normal_daylength)}"
@@ -303,6 +300,7 @@ class WorkDB
   def stop(args = [])
     if @current_workblock != nil and @current_workblock.active
       @current_workblock.stop
+      @current_workblock = nil
     end
   end
 
@@ -351,41 +349,56 @@ class WorkDB
         whatmap[wb.what] = whatmap[wb.what] + [wb]
       end
 
-      whatmap.keys.sort.each do |what|
-        puts "#{what}"
-        blocks = whatmap[what].each do |wb|
-          from = get_tod(wb.from)
-          inprogress = ""
-          if wb.to
-            to = get_tod(wb.to)
-          else
-            to = get_tod(Time.now)
-            inprogress = "active"
-          end
-          
-          puts sprintf("   %4s => %4s %s", from, to, inprogress)
-          
-          daybegin = [from, daybegin].min
-          dayend = [to, dayend].max
-
-          if is_work(what)
-            hours_worked += wb.duration
+      puts
+      if whatmap.keys.length == 0
+        puts "Nothing registered for #{@current_date}"
+      else
+        whatmap.keys.sort.each do |what|
+          puts "#{what}"
+          blocks = whatmap[what].each do |wb|
+            from = get_tod(wb.from)
+            inprogress = ""
+            if wb.to
+              to = get_tod(wb.to)
+            else
+              to = get_tod(Time.now)
+              inprogress = "active"
+            end
+            
+            puts sprintf("   %4s => %4s %s", from, to, inprogress)
+            
+            daybegin = [from, daybegin].min
+            dayend = [to, dayend].max
+            
+            if is_work(what)
+              hours_worked += wb.duration
+            end
           end
         end
+        
+        puts "Total day: #{daybegin} => #{dayend}"
+        puts "Total hours worked: #{hour_decimal_to_hours_minutes(hours_worked)}"
       end
-      
-      puts "Total day: #{daybegin} => #{dayend}"
-      puts "Total hours worked: #{hour_decimal_to_hours_minutes(hours_worked)}"
+
+      puts
     else
+      puts
       @workblocks.each do |wb|
         duration = wb.duration
         if duration
-          puts "#{wb.what}: #{format_duration(wb.duration)} " + 
-            "(#{short_date(wb.from)} => #{short_date(wb.to)})"
+          puts sprintf("%15s: %6s     %s => %s",
+                       wb.what,
+                       hour_decimal_to_hours_minutes(wb.duration),
+                       short_date(wb.from),
+                       short_date(wb.to))
         else
-          puts "#{wb.what}: active (#{short_date(wb.from)} =>"
+          puts sprintf("%15s: %6s     %s (active)",
+                       wb.what,
+                       hour_decimal_to_hours_minutes(wb.duration),
+                       short_date(wb.from))
         end
       end
+      puts
     end
   end
   
@@ -414,6 +427,7 @@ class WorkDB
     
     if @current_workblock != nil and @current_workblock.active
       @current_workblock.stop
+      @current_workblock = nil
     end
 
     if not what
@@ -527,6 +541,30 @@ class WorkDB
       end
     end
 
+    # Check for missing checkout at end of day.
+    if @current_workblock and @current_workblock.active and
+        # if current workblock started before dayend
+        @current_workblock.from < make_time(@current_workblock.from, get_dayend)
+      dayend = make_time(@current_workblock.from, get_dayend)
+      if Time.now - dayend > 0
+        puts
+        puts "Active workblock #{@current_workblock}"
+        puts "has not been terminated. Press ENTER to terminate at normal"
+        puts "day end, or \"now\" to terminate now (#{Time.now}), or specify time."
+        reply = Readline.readline("> ")
+        if not reply or reply.strip == ""
+          stop_at = dayend
+        elsif reply == "now"
+          stop_at = Time.now
+        else
+          stop_at = make_time(@current_workblock.from, reply.to_i)
+        end
+        
+        @current_workblock.stop(stop_at)
+        @current_workblock = nil
+      end
+    end
+
     # Validate workblocks
     @workblocks = @workblocks.delete_if do |wb| 
       if wb.verify
@@ -539,6 +577,7 @@ class WorkDB
   end
 
   def run
+    report(["daily"])
     while true
       begin
         check
