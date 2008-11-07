@@ -42,5 +42,62 @@ is_prime(N, F, _) when N rem (F+2) == 0 ->
 is_prime(N, F, R) ->
     is_prime(N, F + 6, R).
 
-    
-    
+
+
+eratosthenes(Limit) ->
+    CrossLimit = floor(math:sqrt(Limit)),
+    Sieve = initial_sieve(Limit),
+    lists:filter(fun(notprime) ->
+			 false;
+		    (N) ->
+			 true
+		 end,
+		 array:to_list(array:map(
+				 fun
+				     (I, true) -> 
+					 notprime ;
+				     (I, false) -> 
+					 I 
+				 end,
+				 sieve(3, Sieve, CrossLimit)))).
+
+%% Initial sieve; mark all even numbers. (Numbers marked as true
+%% are NOT primes.
+initial_sieve(Limit) ->
+    array:map(
+      fun(N, _) -> 
+	      if N < 2 ->
+		      true;
+		 N == 2 ->
+		      false;
+		 (N > 2) and ((N rem 2) == 0) ->
+		      true;
+		 true ->
+		      false
+	      end
+      end,
+      array:new(Limit+1)).
+
+crossout(M, Sieve, Step) ->
+    Size = array:size(Sieve),
+    if M >= Size ->
+	    Sieve;
+       true ->
+	    crossout(M + Step, array:set(M, true, Sieve), Step)
+    end.
+
+sieve(N, Sieve, CrossLimit) when N > CrossLimit ->
+    Sieve;
+sieve(N, Sieve, CrossLimit) ->
+    Next = N + 2,
+    case array:get(N, Sieve) of
+	%% N not marked, hence prime. Cross out multiples
+	%% of N, starting at N*N.
+	false ->
+	    sieve(Next, crossout(N*N, Sieve, 2*N), CrossLimit);
+
+	%% N is marked, hence not prime. Continue with next.
+	%% 
+	_ ->
+	    sieve(Next, Sieve, CrossLimit)
+    end.	   
