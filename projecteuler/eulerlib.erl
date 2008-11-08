@@ -43,23 +43,23 @@ is_prime(N, F, R) ->
     is_prime(N, F + 6, R).
 
 
-
+%% Sieve of Erastosthenes
 eratosthenes(Limit) ->
-    CrossLimit = floor(math:sqrt(Limit)),
-    Sieve = initial_sieve(Limit),
-    lists:filter(fun(notprime) ->
-			 false;
-		    (N) ->
-			 true
-		 end,
-		 array:to_list(array:map(
-				 fun
-				     (I, true) -> 
-					 notprime ;
-				     (I, false) -> 
-					 I 
-				 end,
-				 sieve(3, Sieve, CrossLimit)))).
+    Sieve = sieve(3, initial_sieve(Limit), floor(math:sqrt(Limit))),
+    PrimeList = 
+	array:to_list(array:map(
+			fun
+			    (_, true) -> 
+				notprime ;
+			    (I, false) -> 
+				I 
+			end, Sieve)),
+    lists:filter(
+      fun(notprime) ->
+	      false;
+	 (_) ->
+	      true
+      end, PrimeList).
 
 %% Initial sieve; mark all even numbers. (Numbers marked as true
 %% are NOT primes.
@@ -101,3 +101,16 @@ sieve(N, Sieve, CrossLimit) ->
 	_ ->
 	    sieve(Next, Sieve, CrossLimit)
     end.	   
+
+
+%% Brute force version of finding the number of divisors.
+num_factors_bf(X) ->
+    num_factors_bf(X, 1, 0, math:sqrt(X)).
+num_factors_bf(_, N, NumF, Sqrt) when N > Sqrt ->
+    2 * NumF;
+num_factors_bf(_, N, NumF, Sqrt) when N == Sqrt ->
+    2 * NumF + 1;
+num_factors_bf(X, N, NumF, Sqrt) when (X rem N) == 0 ->
+    num_factors_bf(X, N + 1, NumF + 1, Sqrt);
+num_factors_bf(X, N, NumF, Sqrt) ->
+    num_factors_bf(X, N + 1, NumF, Sqrt).
