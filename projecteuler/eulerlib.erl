@@ -123,3 +123,28 @@ num_factors_bf(X, N, NumF, Sqrt) when (X rem N) == 0 ->
     num_factors_bf(X, N + 1, NumF + 1, Sqrt);
 num_factors_bf(X, N, NumF, Sqrt) ->
     num_factors_bf(X, N + 1, NumF, Sqrt).
+
+%% Brute force power function
+power(_, 0) -> 1;
+power(Base, Exp) when Exp > 0 ->
+    Base * power(Base, Exp - 1).
+
+%% Returns the number of digits in N
+digits(N) when N < 10 ->
+    [N];
+digits(N) ->
+    [N rem 10|digits(N div 10)].
+
+%% Factorial function
+fac(1) -> 1;
+fac(N) when N > 1 ->
+    fac(N-1) * N.
+
+fib(N) ->
+    {X, _} = fib0(N),
+    X.
+fib0(1) -> {1, 0};
+fib0(2) -> {1, 1};
+fib0(N) ->
+    {X1,X2} = fib0(N-1),
+    {X1+X2, X1}.
