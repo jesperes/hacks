@@ -1,6 +1,15 @@
 -module(eulerlib).
 -compile(export_all).
 
+power(_,0) -> 1;
+power(1, _) -> 1;
+power(Base, Exp) when (Exp rem 2) == 0 ->
+    HalfBase = power(Base, Exp div 2),
+    HalfBase * HalfBase;
+power(Base, Exp) ->
+    Base * power(Base, Exp-1).
+    
+
 floor(X) ->
     T = trunc(X),
     case X - T < 0 of
