@@ -1,12 +1,13 @@
 package projecteuler;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 public class Tests {
-
 	@Test
 	public void testPrimeSieve() {
 		ArrayList<Integer> sieve = PrimeSieve.sieve(2000);
@@ -38,7 +39,19 @@ public class Tests {
 
 	@Test
 	public void testProblem35() {
-		ArrayList<Integer> list = EulerProblems.problem35();
-		Assert.assertEquals(1457, list.size());
+		int sum = EulerProblems.problem35();
+		Assert.assertEquals(4179871, sum);
+	}
+
+	@Test
+	public void testProblem42() throws IOException {
+		Collection<Integer> list = Utils.triangleNumbers(20);
+		Assert.assertTrue(list.contains(28));
+		Assert.assertEquals(19, EulerProblems.alphaValue("S"));
+		Assert.assertEquals(8, EulerProblems.alphaValue("H"));
+		Assert.assertEquals(55, EulerProblems.alphaValue("SKY"));
+
+		int sum = EulerProblems.problem42();
+		Assert.assertEquals(162, sum);
 	}
 }
