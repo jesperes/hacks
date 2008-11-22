@@ -2,6 +2,7 @@ package projecteuler;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 
 public class EulerProblems {
@@ -54,5 +55,30 @@ public class EulerProblems {
 				numTriangleWords++;
 		}
 		return numTriangleWords;
+	}
+
+	public static int problem52(int lim) {
+		for (int n = 1; true; n++) {
+			byte[] b = String.valueOf(n).getBytes();
+			Arrays.sort(b);
+			boolean isPerm = true;
+
+			for (int i = lim; i >= 2 && isPerm; i--) {
+				int x = i * n;
+				byte[] a = String.valueOf(x).getBytes();
+				Arrays.sort(a);
+
+				if (a.length != b.length)
+					isPerm = false;
+				else {
+					for (int j = 0; j < a.length && isPerm; j++) {
+						isPerm = (a[j] == b[j]);
+					}
+				}
+			}
+
+			if (isPerm)
+				return n;
+		}
 	}
 }

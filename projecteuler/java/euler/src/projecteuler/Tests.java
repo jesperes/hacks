@@ -38,6 +38,10 @@ public class Tests {
 	}
 
 	@Test
+	public void testDigits() {
+	}
+
+	@Test
 	public void testProblem35() {
 		int sum = EulerProblems.problem35();
 		Assert.assertEquals(4179871, sum);
@@ -53,5 +57,11 @@ public class Tests {
 
 		int sum = EulerProblems.problem42();
 		Assert.assertEquals(162, sum);
+	}
+
+	@Test
+	public void testProblem52() {
+		Assert.assertEquals(125874, EulerProblems.problem52(2));
+		Assert.assertEquals(142857, EulerProblems.problem52(6));
 	}
 }
