@@ -9,7 +9,6 @@ power(Base, Exp) when (Exp rem 2) == 0 ->
 power(Base, Exp) ->
     Base * power(Base, Exp-1).
     
-
 floor(X) ->
     T = trunc(X),
     case X - T < 0 of
@@ -56,18 +55,18 @@ is_prime(N, F, R) ->
 eratosthenes(Limit) ->
     Sieve = sieve(3, initial_sieve(Limit), floor(math:sqrt(Limit))),
     PrimeList = 
-	array:to_list(array:map(
-			fun
-			    (_, true) -> 
-				notprime ;
-			    (I, false) -> 
-				I 
-			end, Sieve)),
+        array:to_list(array:map(
+                        fun
+                           (_, true) -> 
+                                notprime ;
+                           (I, false) -> 
+                                I 
+                        end, Sieve)),
     lists:filter(
       fun(notprime) ->
-	      false;
-	 (_) ->
-	      true
+              false;
+         (_) ->
+              true
       end, PrimeList).
 
 %% Initial sieve; mark all even numbers. (Numbers marked as true
