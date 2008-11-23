@@ -1,0 +1,20 @@
+- Usability issues -
+
+* In general, difficult to get started...
+* Prompt the user to define a runtime if one isn't found
+* Erlang console visible by default
+* Right-click on *.erl files (and other elements (functions, modules, etc.)) and select "Run/Debug as"
+* "Tracer" tab in erlang console not very useful, difficult to see contents of
+  columns, unclear what it all means.
+* Erlang console to cluttered (tabs, toolbar, split output/input view). Plain terminal is enough.
+* Sender/leader button.
+* No tooltips
+* Process/list view doesn't show anything unless "i" button is pressed. Should be automatic.
+* Live expressions doesn't update ("rpc failed", but no further diagnostics)
+
+- Improvements -
+
+* Syntax coloring
+* Content-assist
+* Outline view
+* Refactoring

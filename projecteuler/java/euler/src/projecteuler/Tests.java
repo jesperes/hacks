@@ -64,4 +64,14 @@ public class Tests {
 		Assert.assertEquals(125874, EulerProblems.problem52(2));
 		Assert.assertEquals(142857, EulerProblems.problem52(6));
 	}
+
+	@Test
+	public void testProblem27() {
+		Assert.assertEquals(-59231, EulerProblems.problem27());
+	}
+
+	@Test
+	public void testProblem97() {
+		Assert.assertEquals(0, EulerProblems.problem97());
+	}
 }
