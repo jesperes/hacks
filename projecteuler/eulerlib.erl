@@ -66,12 +66,12 @@ eratosthenes(Limit) ->
 initial_sieve(Limit) ->
     array:map(
       fun(N, _) -> 
-	      if N < 2 ->
+	      if (N > 2) and ((N rem 2) == 0) ->
+		      true;
+		 N < 2 ->
 		      true;
 		 N == 2 ->
 		      false;
-		 (N > 2) and ((N rem 2) == 0) ->
-		      true;
 		 true ->
 		      false
 	      end
