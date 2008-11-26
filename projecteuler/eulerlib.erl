@@ -55,20 +55,11 @@ is_prime(N, F, R) ->
 %% Sieve of Erastosthenes
 eratosthenes(Limit) ->
     Sieve = sieve(3, initial_sieve(Limit), floor(math:sqrt(Limit))),
-    PrimeList = 
-	array:to_list(array:map(
-			fun
-			    (_, true) -> 
-				notprime ;
-			    (I, false) -> 
-				I 
-			end, Sieve)),
-    lists:filter(
-      fun(notprime) ->
-	      false;
-	 (_) ->
-	      true
-      end, PrimeList).
+    array:foldr(fun(_, true, AccIn) ->
+			AccIn;
+		   (I, false, AccIn) -> 
+			[I|AccIn]
+		end, [], Sieve).
 
 %% Initial sieve; mark all even numbers. (Numbers marked as true
 %% are NOT primes.
