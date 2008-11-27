@@ -146,3 +146,16 @@ fib0(2) -> {1, 1};
 fib0(N) ->
     {X1,X2} = fib0(N-1),
     {X1+X2, X1}.
+
+
+primefactors(N) ->
+    Factors = primefactors(2, N, [], N),
+    %% erlang:display(lists:foldr(fun(X,Acc) -> X*Acc end, 1, Factors)),
+    lists:reverse(Factors).
+
+primefactors(F, _N, Acc, Limit) when F > Limit ->
+    Acc;
+primefactors(F, N, Acc, Limit) when N rem F > 0 ->
+    primefactors(F + 1, N, Acc, Limit);
+primefactors(F, N, Acc, Limit) when N rem F == 0 ->
+    primefactors(F, N div F, [F|Acc], Limit).

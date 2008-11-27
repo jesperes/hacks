@@ -129,4 +129,23 @@ public class EulerProblems {
 				new BigInteger("28433")).add(BigInteger.ONE)
 				.mod(BigInteger.TEN).intValue();
 	}
+
+	public int longestCycle(String s) {
+		StringBuffer buf = new StringBuffer("");
+		int n = 0;
+		for (int i = 0; i < s.length(); i++) {
+
+		}
+	}
+
+	/*
+	 * Find longest recurring cycle in 1/d, 1 >= d < 1000.
+	 */
+	public static int problem26() {
+		for (int i = 1; i < 1000; i++) {
+			double n = 1.0 / i;
+
+		}
+		return 0;
+	}
 }
