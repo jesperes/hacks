@@ -1,7 +1,6 @@
 package projecteuler;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -123,29 +122,41 @@ public class EulerProblems {
 		return max_a * max_b;
 	}
 
-	public static int problem97() {
-		// This is just ridiculously slow, compared to GMP.
-		return new BigInteger("2").pow(7830457).multiply(
-				new BigInteger("28433")).add(BigInteger.ONE)
-				.mod(BigInteger.TEN).intValue();
-	}
-
-	public int longestCycle(String s) {
-		StringBuffer buf = new StringBuffer("");
-		int n = 0;
-		for (int i = 0; i < s.length(); i++) {
-
+	private static boolean isPandigital(int i, int n) {
+		String s = String.valueOf(i);
+		int digits[] = new int[n];
+		for (int j = 0; j < s.length(); j++) {
+			digits[s.charAt(j) - '0']++;
 		}
+
+		for (int j = 0; i < digits.length; j++) {
+			if (digits[j] != 1)
+				return false;
+		}
+
+		return true;
 	}
 
-	/*
-	 * Find longest recurring cycle in 1/d, 1 >= d < 1000.
-	 */
-	public static int problem26() {
-		for (int i = 1; i < 1000; i++) {
-			double n = 1.0 / i;
+	private static int problem41() {
+		List<Integer> primes = PrimeSieve.sieve(1000000000);
+		long[] ndigit_pandigital_primes = new long[12];
+		for (int p : primes) {
+			int len = String.valueOf(p).length();
+			if (isPandigital(p, len)) {
+				long max = ndigit_pandigital_primes[len];
+				if (p > max) {
+					ndigit_pandigital_primes[len] = p;
+				}
+			}
+		}
 
+		for (long p : ndigit_pandigital_primes) {
+			System.out.println("p = " + p);
 		}
 		return 0;
+	}
+
+	public static void main(String[] argv) {
+		System.out.println(problem41());
 	}
 }
