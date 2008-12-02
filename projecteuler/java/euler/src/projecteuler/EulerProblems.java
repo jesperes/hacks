@@ -7,145 +7,208 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class EulerProblems {
 
-	public static int problem35() {
-		final int limit = 20161;
-		ArrayList<Integer> abundantNumbers = new ArrayList<Integer>();
+    public static int problem35() {
+        final int limit = 20161;
+        ArrayList<Integer> abundantNumbers = new ArrayList<Integer>();
 
-		for (int i = 3; i < limit; i++) {
-			if (Divisors.isAbundant(i)) {
-				abundantNumbers.add(i);
-			}
-		}
+        for (int i = 3; i < limit; i++) {
+            if (Divisors.isAbundant(i)) {
+                abundantNumbers.add(i);
+            }
+        }
 
-		boolean[] sums = new boolean[limit + 1];
+        boolean[] sums = new boolean[limit + 1];
 
-		for (int a1 : abundantNumbers) {
-			for (int a2 : abundantNumbers) {
-				int n = a1 + a2;
-				if (a1 <= a2 && n < sums.length) {
-					sums[n] = true;
-				}
-			}
-		}
+        for (int a1 : abundantNumbers) {
+            for (int a2 : abundantNumbers) {
+                int n = a1 + a2;
+                if (a1 <= a2 && n < sums.length) {
+                    sums[n] = true;
+                }
+            }
+        }
 
-		int sum = 0;
-		for (int i = 1; i < sums.length; i++) {
-			if (!sums[i]) {
-				sum += i;
-			}
-		}
+        int sum = 0;
+        for (int i = 1; i < sums.length; i++) {
+            if (!sums[i]) {
+                sum += i;
+            }
+        }
 
-		return sum;
-	}
+        return sum;
+    }
 
-	public static int alphaValue(String s) {
-		int sum = 0;
-		for (byte c : s.getBytes()) {
-			sum += (c - 65 + 1);
-		}
-		return sum;
-	}
+    public static int alphaValue(String s) {
+        int sum = 0;
+        for (byte c : s.getBytes()) {
+            sum += (c - 65 + 1);
+        }
+        return sum;
+    }
 
-	public static int problem42() throws IOException {
-		int numTriangleWords = 0;
-		Collection<Integer> list = Utils.triangleNumbers(20000);
-		for (String s : Files.read("words.txt").split(",")) {
-			int alpha = alphaValue(s.trim().substring(1, s.length() - 1));
-			if (list.contains(alpha))
-				numTriangleWords++;
-		}
-		return numTriangleWords;
-	}
+    public static int problem42() throws IOException {
+        int numTriangleWords = 0;
+        Collection<Integer> list = Utils.triangleNumbers(20000);
+        for (String s : Files.read("words.txt").split(",")) {
+            int alpha = alphaValue(s.trim().substring(1, s.length() - 1));
+            if (list.contains(alpha))
+                numTriangleWords++;
+        }
+        return numTriangleWords;
+    }
 
-	public static int problem52(int lim) {
-		for (int n = 1; true; n++) {
-			byte[] b = String.valueOf(n).getBytes();
-			Arrays.sort(b);
-			boolean isPerm = true;
+    public static int problem52(int lim) {
+        for (int n = 1; true; n++) {
+            byte[] b = String.valueOf(n).getBytes();
+            Arrays.sort(b);
+            boolean isPerm = true;
 
-			for (int i = lim; i >= 2 && isPerm; i--) {
-				int x = i * n;
-				byte[] a = String.valueOf(x).getBytes();
-				Arrays.sort(a);
+            for (int i = lim; i >= 2 && isPerm; i--) {
+                int x = i * n;
+                byte[] a = String.valueOf(x).getBytes();
+                Arrays.sort(a);
 
-				if (a.length != b.length)
-					isPerm = false;
-				else {
-					for (int j = 0; j < a.length && isPerm; j++) {
-						isPerm = (a[j] == b[j]);
-					}
-				}
-			}
+                if (a.length != b.length)
+                    isPerm = false;
+                else {
+                    for (int j = 0; j < a.length && isPerm; j++) {
+                        isPerm = (a[j] == b[j]);
+                    }
+                }
+            }
 
-			if (isPerm)
-				return n;
-		}
-	}
+            if (isPerm)
+                return n;
+        }
+    }
 
-	public static int p27numPrimes(int a, int b,
-			HashMap<Integer, Boolean> primeMap) {
-		int n = 0;
+    public static int p27numPrimes(int a, int b,
+            HashMap<Integer, Boolean> primeMap) {
+        int n = 0;
 
-		while (true) {
-			int m = n * n + a * n + b;
-			if (primeMap.containsKey(m))
-				n++;
-			else
-				break;
-		}
-		return n;
-	}
+        while (true) {
+            int m = n * n + a * n + b;
+            if (primeMap.containsKey(m))
+                n++;
+            else
+                break;
+        }
+        return n;
+    }
 
-	public static int problem27() {
-		List<Integer> primes = PrimeSieve.sieve(100000);
-		HashMap<Integer, Boolean> primeMap = new HashMap<Integer, Boolean>();
-		for (Integer p : primes) {
-			primeMap.put(p, true);
-		}
+    public static int problem27() {
+        List<Integer> primes = PrimeSieve.sieve(100000);
+        HashMap<Integer, Boolean> primeMap = new HashMap<Integer, Boolean>();
+        for (Integer p : primes) {
+            primeMap.put(p, true);
+        }
 
-		int maxLength = 0;
-		int max_a = 0, max_b = 0;
+        int maxLength = 0;
+        int max_a = 0, max_b = 0;
 
-		for (int a = -999; a < 1000; a++) {
-			for (int b = -999; b < 1000; b++) {
-				int n = p27numPrimes(a, b, primeMap);
-				if (n > maxLength) {
-					maxLength = n;
-					max_a = a;
-					max_b = b;
-				}
-			}
-		}
+        for (int a = -999; a < 1000; a++) {
+            for (int b = -999; b < 1000; b++) {
+                int n = p27numPrimes(a, b, primeMap);
+                if (n > maxLength) {
+                    maxLength = n;
+                    max_a = a;
+                    max_b = b;
+                }
+            }
+        }
 
-		return max_a * max_b;
-	}
+        return max_a * max_b;
+    }
 
-	public static int problem97() {
-		// This is just ridiculously slow, compared to GMP.
-		return new BigInteger("2").pow(7830457).multiply(
-				new BigInteger("28433")).add(BigInteger.ONE)
-				.mod(BigInteger.TEN).intValue();
-	}
+    public static int problem97() {
+        // This is just ridiculously slow, compared to GMP.
+        return new BigInteger("2").pow(7830457).multiply(
+                new BigInteger("28433")).add(BigInteger.ONE)
+                .mod(BigInteger.TEN).intValue();
+    }
 
-	public int longestCycle(String s) {
-		StringBuffer buf = new StringBuffer("");
-		int n = 0;
-		for (int i = 0; i < s.length(); i++) {
+    public static boolean isTruncatablePrime(int p, Map<Integer, Boolean> primes) {
+        if (p <= 7)
+            return false;
 
-		}
-	}
+        if (!primes.containsKey(p))
+            return false;
 
-	/*
-	 * Find longest recurring cycle in 1/d, 1 >= d < 1000.
-	 */
-	public static int problem26() {
-		for (int i = 1; i < 1000; i++) {
-			double n = 1.0 / i;
+        String s = String.valueOf(p);
+        boolean truncatable = true;
+        for (int i = 1; i < s.length(); i++) {
+            int sRight = Integer.valueOf(s.substring(i));
+            if (!primes.containsKey(sRight)) {
+                truncatable = false;
+                break;
+            }
 
-		}
-		return 0;
-	}
+            int sLeft = Integer.valueOf(s.substring(0, s.length() - i));
+            if (!primes.containsKey(sLeft)) {
+                truncatable = false;
+                break;
+            }
+        }
+
+        return truncatable;
+    }
+
+    // Truncatable primes
+    public static int problem37() throws Exception {
+        Map<Integer, Boolean> primes = PrimeSieve.sieve_map(1000000);
+        int sum = 0;
+        int count = 0;
+
+        for (int p : primes.keySet()) {
+            if (isTruncatablePrime(p, primes)) {
+                sum += p;
+                count++;
+            }
+        }
+
+        if (count != 11)
+            throw new Exception("count != 11");
+
+        return sum;
+    }
+
+    public static boolean isPandigital(int p, int n) {
+        String s = String.valueOf(p);
+        if (s.length() != n)
+            return false;
+
+        int d[] = new int[n];
+        for (int i = 0; i < s.length(); i++) {
+            d[i - 1]++;
+        }
+        for (int i = 0; i < s.length(); i++) {
+            if (d[i - 1] != 1)
+                return false;
+        }
+
+        return true;
+    }
+
+    // Problem 38 - concatenated products
+    public static int problem38() {
+        int max = 0;
+        StringBuffer pandigital = new StringBuffer();
+        for (int n = 1; n < 1000; n++) {
+            pandigital.setLength(0);
+            for (int i = 1; i < 10; i++) {
+                pandigital.append(n * i);
+                if (pandigital.length() > 9)
+                    break;
+            }
+
+            if (pandigital.length() > 9)
+                continue;
+
+            System.out.println("pandigital = " + pandigital);
+        }
+    }
 }

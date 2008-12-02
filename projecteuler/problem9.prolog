@@ -4,9 +4,3 @@ triplet(Prod) :-
 	X + Y + Z #= 1000,
 	fd_labeling([X, Y, Z]),
 	Prod is X * Y * Z.
-
-
-
-
-
-
