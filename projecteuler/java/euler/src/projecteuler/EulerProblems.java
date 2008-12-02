@@ -11,37 +11,6 @@ import java.util.Map;
 
 public class EulerProblems {
 
-    public static int problem35() {
-        final int limit = 20161;
-        ArrayList<Integer> abundantNumbers = new ArrayList<Integer>();
-
-        for (int i = 3; i < limit; i++) {
-            if (Divisors.isAbundant(i)) {
-                abundantNumbers.add(i);
-            }
-        }
-
-        boolean[] sums = new boolean[limit + 1];
-
-        for (int a1 : abundantNumbers) {
-            for (int a2 : abundantNumbers) {
-                int n = a1 + a2;
-                if (a1 <= a2 && n < sums.length) {
-                    sums[n] = true;
-                }
-            }
-        }
-
-        int sum = 0;
-        for (int i = 1; i < sums.length; i++) {
-            if (!sums[i]) {
-                sum += i;
-            }
-        }
-
-        return sum;
-    }
-
     public static int alphaValue(String s) {
         int sum = 0;
         for (byte c : s.getBytes()) {
@@ -193,22 +162,57 @@ public class EulerProblems {
         return true;
     }
 
-    // Problem 38 - concatenated products
-    public static int problem38() {
-        int max = 0;
-        StringBuffer pandigital = new StringBuffer();
-        for (int n = 1; n < 1000; n++) {
-            pandigital.setLength(0);
-            for (int i = 1; i < 10; i++) {
-                pandigital.append(n * i);
-                if (pandigital.length() > 9)
-                    break;
+    public static int problem35() {
+        final int limit = 20161;
+        ArrayList<Integer> abundantNumbers = new ArrayList<Integer>();
+
+        for (int i = 3; i < limit; i++) {
+            if (Divisors.isAbundant(i)) {
+                abundantNumbers.add(i);
             }
-
-            if (pandigital.length() > 9)
-                continue;
-
-            System.out.println("pandigital = " + pandigital);
         }
+
+        boolean[] sums = new boolean[limit + 1];
+
+        for (int a1 : abundantNumbers) {
+            for (int a2 : abundantNumbers) {
+                int n = a1 + a2;
+                if (a1 <= a2 && n < sums.length) {
+                    sums[n] = true;
+                }
+            }
+        }
+
+        int sum = 0;
+        for (int i = 1; i < sums.length; i++) {
+            if (!sums[i]) {
+                sum += i;
+            }
+        }
+
+        return sum;
+    }
+
+    private static int problem41() {
+        List<Integer> primes = PrimeSieve.sieve(1000000000);
+        long[] ndigit_pandigital_primes = new long[12];
+        for (int p : primes) {
+            int len = String.valueOf(p).length();
+            if (isPandigital(p, len)) {
+                long max = ndigit_pandigital_primes[len];
+                if (p > max) {
+                    ndigit_pandigital_primes[len] = p;
+                }
+            }
+        }
+
+        for (long p : ndigit_pandigital_primes) {
+            System.out.println("p = " + p);
+        }
+        return 0;
+    }
+
+    public static void main(String[] argv) {
+        System.out.println(problem41());
     }
 }
