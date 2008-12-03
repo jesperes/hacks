@@ -8,7 +8,6 @@ pandigital_check([X|Xs], [Y|Ys]) when (X - $0) == Y ->
 pandigital_check(_, _) ->
     false.
 
-
 %% Returns true if Numbers is a list of integers which taken together
 %% are 1..N pandigital
 pandigital(Numbers, N) ->
