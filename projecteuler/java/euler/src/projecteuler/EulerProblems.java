@@ -7,39 +7,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class EulerProblems {
-
-	public static int problem35() {
-		final int limit = 20161;
-		ArrayList<Integer> abundantNumbers = new ArrayList<Integer>();
-
-		for (int i = 3; i < limit; i++) {
-			if (Divisors.isAbundant(i)) {
-				abundantNumbers.add(i);
-			}
-		}
-
-		boolean[] sums = new boolean[limit + 1];
-
-		for (int a1 : abundantNumbers) {
-			for (int a2 : abundantNumbers) {
-				int n = a1 + a2;
-				if (a1 <= a2 && n < sums.length) {
-					sums[n] = true;
-				}
-			}
-		}
-
-		int sum = 0;
-		for (int i = 1; i < sums.length; i++) {
-			if (!sums[i]) {
-				sum += i;
-			}
-		}
-
-		return sum;
-	}
 
 	public static int alphaValue(String s) {
 		int sum = 0;
@@ -180,6 +150,89 @@ public class EulerProblems {
 		}
 
 		return -1;
+	}
+
+	public static int problem97() {
+		// This is just ridiculously slow, compared to GMP.
+		return new BigInteger("2").pow(7830457).multiply(
+				new BigInteger("28433")).add(BigInteger.ONE)
+				.mod(BigInteger.TEN).intValue();
+	}
+
+	public static boolean isTruncatablePrime(int p, Map<Integer, Boolean> primes) {
+		if (p <= 7)
+			return false;
+
+		if (!primes.containsKey(p))
+			return false;
+
+		String s = String.valueOf(p);
+		boolean truncatable = true;
+		for (int i = 1; i < s.length(); i++) {
+			int sRight = Integer.valueOf(s.substring(i));
+			if (!primes.containsKey(sRight)) {
+				truncatable = false;
+				break;
+			}
+
+			int sLeft = Integer.valueOf(s.substring(0, s.length() - i));
+			if (!primes.containsKey(sLeft)) {
+				truncatable = false;
+				break;
+			}
+		}
+
+		return truncatable;
+	}
+
+	// Truncatable primes
+	public static int problem37() throws Exception {
+		Map<Integer, Boolean> primes = PrimeSieve.sieve_map(1000000);
+		int sum = 0;
+		int count = 0;
+
+		for (int p : primes.keySet()) {
+			if (isTruncatablePrime(p, primes)) {
+				sum += p;
+				count++;
+			}
+		}
+
+		if (count != 11)
+			throw new Exception("count != 11");
+
+		return sum;
+	}
+
+	public static int problem35() {
+		final int limit = 20161;
+		ArrayList<Integer> abundantNumbers = new ArrayList<Integer>();
+
+		for (int i = 3; i < limit; i++) {
+			if (Divisors.isAbundant(i)) {
+				abundantNumbers.add(i);
+			}
+		}
+
+		boolean[] sums = new boolean[limit + 1];
+
+		for (int a1 : abundantNumbers) {
+			for (int a2 : abundantNumbers) {
+				int n = a1 + a2;
+				if (a1 <= a2 && n < sums.length) {
+					sums[n] = true;
+				}
+			}
+		}
+
+		int sum = 0;
+		for (int i = 1; i < sums.length; i++) {
+			if (!sums[i]) {
+				sum += i;
+			}
+		}
+
+		return sum;
 	}
 
 	public static void main(String[] argv) {
