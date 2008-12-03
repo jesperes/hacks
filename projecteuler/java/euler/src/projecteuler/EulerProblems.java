@@ -1,6 +1,7 @@
 package projecteuler;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -122,14 +123,18 @@ public class EulerProblems {
 		return max_a * max_b;
 	}
 
-	private static boolean isPandigital(int i, int n) {
-		String s = String.valueOf(i);
-		int digits[] = new int[n];
-		for (int j = 0; j < s.length(); j++) {
-			digits[s.charAt(j) - '0']++;
+	private static boolean isPandigital(BigInteger i) {
+		String s = i.toString();
+		int n = s.length();
+		int digits[] = new int[10];
+		for (int j = 0; j < n; j++) {
+			int d = s.charAt(j) - '0';
+			digits[d]++;
+			if (digits[d] >= 2)
+				return false;
 		}
 
-		for (int j = 0; i < digits.length; j++) {
+		for (int j = 1; j <= n; j++) {
 			if (digits[j] != 1)
 				return false;
 		}
@@ -138,22 +143,43 @@ public class EulerProblems {
 	}
 
 	private static int problem41() {
-		List<Integer> primes = PrimeSieve.sieve(1000000000);
-		long[] ndigit_pandigital_primes = new long[12];
-		for (int p : primes) {
-			int len = String.valueOf(p).length();
-			if (isPandigital(p, len)) {
-				long max = ndigit_pandigital_primes[len];
-				if (p > max) {
-					ndigit_pandigital_primes[len] = p;
-				}
+		assert (isPandigital(BigInteger.valueOf(123456789)));
+		assert (isPandigital(BigInteger.valueOf(12345)));
+
+		BigInteger zero = BigInteger.ZERO;
+		// BigInteger one = BigInteger.ONE;
+		BigInteger two = BigInteger.valueOf(2);
+		BigInteger three = BigInteger.valueOf(3);
+		BigInteger five = BigInteger.valueOf(5);
+		BigInteger seven = BigInteger.valueOf(7);
+
+		int n = 0;
+		for (BigInteger i = BigInteger.valueOf(987654321); i.compareTo(zero) > 0; i
+				.subtract(two)) {
+			n++;
+			if (i.mod(three) == zero || i.mod(five) == zero
+					|| i.mod(seven) == zero) {
+				continue;
 			}
+
+			if (!isPandigital(i))
+				continue;
+
+			if (n % 100000 == 0) {
+				System.out.println("Count = " + n);
+			}
+
+			// System.out.println("Checking pandigital " + i +
+			// " for primeness");
+			if (!i.isProbablePrime(20)) {
+				continue;
+			}
+
+			System.out.println("Probable prime: " + i);
+			return i.intValue();
 		}
 
-		for (long p : ndigit_pandigital_primes) {
-			System.out.println("p = " + p);
-		}
-		return 0;
+		return -1;
 	}
 
 	public static void main(String[] argv) {
