@@ -157,22 +157,10 @@ perms([]) ->
 perms(L) -> 
     [[H|T] || H <- L, T <- perms(L--[H])].
 
-pd_update_flags(N, Array) when N > 0 ->
-    N = array:get(C, Array),
-    erlang:display({X, C, N}),
-    
-    if N == undefined ->
-	    array:set(C, 1, Array);
-       N >= 1 ->
-	    false;
-       true ->		      
-	    array:set(C, N+1, Array)
-    end;
-pd_update_flags(0, Array) ->
-    false.
 
-pandigital9(P) ->
+pandigital(P) ->
     PList = integer_to_list(P),
+    N = length(PList),
     CountArray = 
 	lists:foldr(
 	  fun(X, Acc) ->
@@ -180,9 +168,30 @@ pandigital9(P) ->
 		      false ->
 			  false;
 		      Array ->
-			  C = X - $0,
-			  pd_update_flags(C, Array)
+			  C = X - $0 - 1,
+			  ValidIndex = (C >= 0) and (C < N),
+			  if ValidIndex ->
+				  case array:get(C, Array) of
+				      undefined ->
+					  array:set(C, set, Array);
+				      _ ->		      
+					  false
+				  end;
+			     true ->
+				  false
+			  end
 		  end
 	  end,
-	  array:new(9), PList),
-    array:foldr(CountArray).
+	  array:new(N), PList),
+    case CountArray of
+	false ->
+	    false;
+	Array ->
+	    array:foldr(fun(_, undefined, _) ->
+				false;
+			   (_, _, Acc) ->
+				Acc
+			end, true, Array)
+    end.
+
+
