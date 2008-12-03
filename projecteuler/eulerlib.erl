@@ -138,7 +138,7 @@ fib0(N) ->
     {X1,X2} = fib0(N-1),
     {X1+X2, X1}.
 
-
+%% Returns a list of primefactors of N
 primefactors(N) ->
     Factors = primefactors(2, N, [], N),
     %% erlang:display(lists:foldr(fun(X,Acc) -> X*Acc end, 1, Factors)),
@@ -150,3 +150,45 @@ primefactors(F, N, Acc, Limit) when N rem F > 0 ->
     primefactors(F + 1, N, Acc, Limit);
 primefactors(F, N, Acc, Limit) when N rem F == 0 ->
     primefactors(F, N div F, [F|Acc], Limit).
+
+
+
+perms([]) ->
+    [[]];
+perms(L) -> 
+    [[H|T] || H <- L, T <- perms(L--[H])].
+
+pd_update_flags(N, Array) when N > 0 ->
+    N = array:get(C, Array),
+    erlang:display({X, C, N}),
+    
+    if N == undefined ->
+	    array:set(C, 1, Array);
+       N >= 1 ->
+	    false;
+       true ->		      
+	    array:set(C, N+1, Array)
+    end;
+pd_update_flags(0, Array) ->
+    false.
+
+pandigital9(P) ->
+    PList = integer_to_list(P),
+    CountArray = 
+	lists:foldr(
+	  fun(X, Acc) ->
+		  case Acc of
+		      false ->
+			  false;
+		      Array ->
+			  C = X - $0,
+			  pd_update_flags(C, Array)
+		  end
+	  end,
+	  array:new(9), PList),
+    array:foldr(CountArray).
+
+
+
+    
+    
