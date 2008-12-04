@@ -195,3 +195,18 @@ pandigital(P) ->
     end.
 
 
+foldint(F, Acc, From, To) ->
+    lists:reverse(foldint0(F, Acc, From, To)).
+
+foldint0(F, InitalAcc, From, To) when From < To ->
+    NextAcc = F(From, InitalAcc),
+    foldint0(F, NextAcc, From+1, To);
+foldint0(F, InitalAcc, From, From) ->
+    F(From, InitalAcc);
+foldint0(_, Acc, From, To) when From > To ->
+    Acc.
+
+    
+
+    
+			    
