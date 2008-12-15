@@ -17,6 +17,8 @@ logfile		/var/log/rsnapshot
 lockfile	/var/run/rsnapshot.pid
 
 exclude		.gvfs
+exclude		Trash
+exclude		cmakebuild
 
 rsync_short_args	-a
 rsync_long_args		--delete --numeric-ids --relative --delete-excluded
@@ -25,6 +27,6 @@ one_fs		1
 link_dest	1
 sync_first	1
 
-backup	/home/		localhost/
-backup	/etc/		localhost/
-backup	/usr/local/	localhost/
+backup	/home/		HOSTNAME/
+backup	/etc/		HOSTNAME/
+backup	/usr/local/	HOSTNAME/
