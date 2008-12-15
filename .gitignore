@@ -4,3 +4,5 @@
 *.exe
 erl_crash.dump
 *.exe.stackdump
+rsnapshot.conf
+projecteuler/java/euler/bin/

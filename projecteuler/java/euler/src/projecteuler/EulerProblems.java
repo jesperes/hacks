@@ -234,16 +234,16 @@ public class EulerProblems {
         o.println("]");
     }
 
-    public static int sumList(List<? extends Number> list) {
-        int sum = 0;
+    public static long sumList(List<? extends Number> list) {
+        long sum = 0;
         for (Number n : list) {
             sum += n.intValue();
         }
         return sum;
     }
 
-    public static int problem50() {
-        int limit = 1000;
+    public static long problem50() {
+        int limit = 1000000;
         List<Integer> sieve = PrimeSieve.sieve(limit);
         Map<Integer, Boolean> sieveMap = PrimeSieve.sieve_map(limit);
 
@@ -253,16 +253,13 @@ public class EulerProblems {
         System.out.println("Largest prime: " + largestPrime);
 
         for (int len = numPrimes; len > 0; len--) {
-
-            len = 21;
             /*
              * Check if there is a sequence of length "len" which adds up to a
              * prime. Loop over all possible sequences of length "len".
              */
-
-            System.out.println("Checking sequences of length " + len);
-
-            for (int i = 0; i + len <= numPrimes; i++) {
+            // System.out.println("Checking sequences of length " + len);
+            long sum = 0;
+            for (int i = 0; i + len <= numPrimes && sum < largestPrime; i++) {
                 /*
                  * Check sequence [i..i+len].
                  */
@@ -270,12 +267,12 @@ public class EulerProblems {
                 List<Integer> subList = sieve.subList(i, i + len);
                 assert (subList.size() == len);
 
-                printList(System.out, subList);
+                // printList(System.out, subList);
 
-                int sum = sumList(subList);
+                sum = sumList(subList);
                 if (sum <= largestPrime) {
-                    System.out.println(String.format("%d..%d = %d", subList
-                            .get(0), subList.get(subList.size() - 1), sum));
+                    // System.out.println(String.format("%d..%d = %d", subList
+                    // .get(0), subList.get(subList.size() - 1), sum));
 
                     if (sieveMap.containsKey(sum)) {
                         System.out.println(String.format(
@@ -285,8 +282,6 @@ public class EulerProblems {
                     }
                 }
             }
-
-            return -2;
         }
 
         return -1;

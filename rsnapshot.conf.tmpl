@@ -1,0 +1,30 @@
+config_version	1.2
+snapshot_root	BACKUP_MEDIA
+no_create_root	1
+cmd_cp		/bin/cp
+cmd_rm		/bin/rm
+cmd_rsync	/usr/bin/rsync
+cmd_logger	/usr/bin/logger
+
+interval	hourly	6
+interval	daily	7
+interval	weekly	4
+interval	monthly	3
+
+verbose		3
+loglevel	3
+logfile		/var/log/rsnapshot
+lockfile	/var/run/rsnapshot.pid
+
+exclude		.gvfs
+
+rsync_short_args	-a
+rsync_long_args		--delete --numeric-ids --relative --delete-excluded
+
+one_fs		1
+link_dest	1
+sync_first	1
+
+backup	/home/		localhost/
+backup	/etc/		localhost/
+backup	/usr/local/	localhost/
