@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 # Wrapper script around rsnapshot to identify my external usb-drive.
 # It checks all mounted drives under /media/ and searches for a
 # special UUID-named file.
@@ -16,12 +18,13 @@ function get_backup_drive()
     exit 1
 }
 
-conf_tmpl=$(cd $(dirname "$0"); pwd)/rsnapshot.conf.tmpl
-conf=`pwd`/rsnapshot.conf
+home=$(cd $(dirname "$0"); pwd)
+conf_tmpl=$home/rsnapshot.conf.tmpl
+conf=$home/rsnapshot.conf
 budrive=`get_backup_drive`
 [ -z "$budrive" ] && exit 1
 
-cp $cont_tmpl $conf
+cp $conf_tmpl $conf
 perl -i -pe "s@BACKUP_MEDIA@$budrive@g" $conf
 perl -i -pe "s@HOSTNAME@`uname -n`@g" $conf
 

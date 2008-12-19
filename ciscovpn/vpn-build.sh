@@ -1,4 +1,5 @@
 #!/bin/bash
+# Download and build the Cisco VPN client
 
 set -e
 

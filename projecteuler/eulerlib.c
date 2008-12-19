@@ -22,7 +22,7 @@ inline int32_t *alloc_bits(int64_t size) {
 int32_t *sieve(int max)
 {
   int32_t *sieve = malloc(sizeof(int32_t) * max);
-  
+
   for (int i = 0; i < 1000; i++) {
     bit_set(sieve, i);
     assert(bit_get(sieve, i) == 1);
@@ -32,7 +32,7 @@ int32_t *sieve(int max)
     bit_clear(sieve, i);
     assert(bit_get(sieve, i) == 0);
   }
-  
+
   printf("0x%08lx\n", sieve[0]);
 
   return sieve;
