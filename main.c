@@ -1,3 +1,5 @@
+/* Generic C program */
+
 #include <stdio.h>
 #include <stdlib.h>
 
