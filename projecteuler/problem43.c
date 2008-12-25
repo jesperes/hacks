@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 int digits[10];
 
@@ -12,5 +13,5 @@ int *get_digits(int n)
 
 int main()
 {
-
+  return 0;
 }
