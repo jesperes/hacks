@@ -1,21 +1,22 @@
-# Returns true/false if the digit i is contained in number
-def contains(number, width, i)
-  
+def non_pandigital(s)
+  return s =~ /(.).*\1/
 end
 
-def gen234(d1s)
-  (012..987).each do |d234|
-    next if d234 % 2 == 1
-    s = sprintf("%03d", d234)   # TODO possibly very slow
-    next if s[d1s]              # skip all number with d1 in them
-    yield d234
-  end
-end
-
-def gen
-  (1..9).each do |d1|
-    gen234(d1.to_s) do |d234|
-      
+# list is a list of integers. Return the list obtained by prepending
+# 0..9 to each of the integers in list, and remove all resulting ints
+# such that the first three integers form a number not divisble by the
+# given prime and the entire integer does not form a pandigital
+# number.
+def prepend(list, prime)
+  newlist = []
+  lists.each do |n|
+    (0..9).each do |i|
+      all = i.to_s + n.to_s
+      next if non_pandigital(all)
+      next unless all[0..2].to_i % prime == 0
+      newlist << all
     end
   end
+  return newlist
 end
+
