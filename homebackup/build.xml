@@ -92,7 +92,7 @@
 
     <echo>Calculating backup size</echo>
     <exec executable="${cygwin}/bin/du.exe">
-      <arg value="--max-depth=1"/>
+      <arg value="--max-depth=2"/>
       <arg value="${backupdir}"/>      
       <arg value="${incr.dir}"/>
     </exec>
