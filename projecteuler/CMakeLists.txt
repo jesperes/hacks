@@ -1,6 +1,6 @@
 project(euler)
 cmake_minimum_required(VERSION 2.6)
-if (CMAKE_COMPILER_IS_GNUCC)
+if(CMAKE_COMPILER_IS_GNUCC)
   set(CMAKE_C_FLAGS "-g -O2 -Wall -Werror -std=c99")
 endif()
 
