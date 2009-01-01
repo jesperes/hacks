@@ -2,44 +2,48 @@
 #include <stdio.h>
 #include <assert.h>
 
-inline int bit_get(int32_t *bitarray, int64_t i) {
-  return !!(bitarray[i >> 5] & (1 << (i % 32)));
-}
-
-inline void bit_set(int32_t *bitarray, int64_t i) {
-  bitarray[i >> 5] |= (1 << (i % 32));
-}
-
-inline void bit_clear(int32_t *bitarray, int64_t i) {
-  bitarray[i >> 5] &= ~(1 << (i % 32));
-}
-
-inline int32_t *alloc_bits(int64_t size) {
-  return malloc(size >> 3);
-}
-
-
-int32_t *sieve(int max)
+void
+sieve(int *s, int n, int print_primes)
 {
-  int32_t *sieve = malloc(sizeof(int32_t) * max);
+  int nexti = 2;                /* index of next prime */
+  int p;
+  int nump = 0;                 /* number of primes */
 
-  for (int i = 0; i < 1000; i++) {
-    bit_set(sieve, i);
-    assert(bit_get(sieve, i) == 1);
+  for (int i = 0; i < n; i++) {
+    s[i] = i;
   }
 
-  for (int i = 0; i < 1000; i++) {
-    bit_clear(sieve, i);
-    assert(bit_get(sieve, i) == 0);
+  while (1) {
+    while ((nexti < n) && (p = s[nexti]) == 0) {
+      nexti++;
+    }
+
+    if (nexti >= n)
+      break;
+
+    // p is now the next prime
+    assert(p != 0);
+
+    // increment number of primes found
+    nump++;
+
+    if (print_primes)
+      printf("%d\n", p);
+
+    // Cross out all multiples of p
+    for (int i = nexti + p; i < n; i += p) {
+      s[i] = 0;
+    }
+
+    nexti++;
   }
-
-  printf("0x%08lx\n", sieve[0]);
-
-  return sieve;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
-  sieve(100);
+  int max = atol(argv[1]);
+  int *s = malloc(max * sizeof(int));
+  sieve(s, max, 1);
+  free(s);
   return 0;
 }
