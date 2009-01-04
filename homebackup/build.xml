@@ -24,7 +24,7 @@
     <exec executable="${cygwin}/bin/rsync.exe">
 
       <!-- rsync options -->
-      <arg value="-rulto"/>
+      <arg value="-vrulto"/>
       <arg value="--delete"/>
       <arg value="--delete-excluded"/>
       <arg value="--modify-window=1"/>
@@ -93,7 +93,7 @@
 
     <echo>Calculating backup size</echo>
     <exec executable="${cygwin}/bin/du.exe">
-      <arg value="--max-depth=0"/>
+      <arg value="--max-depth=1"/>
       <arg value="${backupdir}"/>
       <arg value="${incr.dir}"/>
     </exec>
