@@ -1,0 +1,2 @@
+-module(problem53).
+-compile(export_all).
