@@ -2,6 +2,7 @@ package projecteuler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class PrimeSieve {
@@ -34,9 +35,9 @@ public class PrimeSieve {
         return sieve;
     }
 
-    public static ArrayList<Integer> sieve(int max) {
+    public static List<Integer> sieve(int max) {
         boolean[] sieve = sieve0(max);
-        ArrayList<Integer> primes = new ArrayList<Integer>();
+        List<Integer> primes = new ArrayList<Integer>();
         for (int i = 0; i < sieve.length; i++) {
             if (!sieve[i]) {
                 primes.add(i);

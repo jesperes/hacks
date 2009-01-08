@@ -8,7 +8,7 @@ power(Base, Exp) when (Exp rem 2) == 0 ->
     HalfBase * HalfBase;
 power(Base, Exp) ->
     Base * power(Base, Exp-1).
-    
+
 
 floor(X) ->
     T = trunc(X),
@@ -52,12 +52,13 @@ is_prime(N, F, R) ->
     is_prime(N, F + 6, R).
 
 
+
 %% Sieve of Erastosthenes
 eratosthenes(Limit) ->
     Sieve = sieve(3, initial_sieve(Limit), floor(math:sqrt(Limit))),
     array:foldr(fun(_, true, AccIn) ->
 			AccIn;
-		   (I, false, AccIn) -> 
+		   (I, false, AccIn) ->
 			[I|AccIn]
 		end, [], Sieve).
 
@@ -65,7 +66,7 @@ eratosthenes(Limit) ->
 %% are NOT primes.
 initial_sieve(Limit) ->
     array:map(
-      fun(N, _) -> 
+      fun(N, _) ->
 	      if (N > 2) and ((N rem 2) == 0) ->
 		      true;
 		 N < 2 ->
@@ -97,10 +98,10 @@ sieve(N, Sieve, CrossLimit) ->
 	    sieve(Next, crossout(N*N, Sieve, 2*N), CrossLimit);
 
 	%% N is marked, hence not prime. Continue with next.
-	%% 
+	%%
 	_ ->
 	    sieve(Next, Sieve, CrossLimit)
-    end.	   
+    end.
 
 
 %% Brute force version of finding the number of divisors.
@@ -125,9 +126,15 @@ digits0(N) ->
     [N rem 10|digits0(N div 10)].
 
 %% Factorial function
-fac(1) -> 1;
-fac(N) when N > 1 ->
+fac(0) -> 1;
+fac(N) when N > 0 ->
+    erlang:display({fac, N}),
     fac(N-1) * N.
+
+comb(N,R) when R < N ->
+    erlang:display({comb, N, R}),
+    fac(N) div (fac(R) * fac(N-R)).
+
 
 fib(N) ->
     {X, _} = fib0(N),
@@ -154,14 +161,14 @@ primefactors(F, N, Acc, Limit) when N rem F == 0 ->
 
 perms([]) ->
     [[]];
-perms(L) -> 
+perms(L) ->
     [[H|T] || H <- L, T <- perms(L--[H])].
 
 
 pandigital(P) ->
     PList = integer_to_list(P),
     N = length(PList),
-    CountArray = 
+    CountArray =
 	lists:foldr(
 	  fun(X, Acc) ->
 		  case Acc of
@@ -174,7 +181,7 @@ pandigital(P) ->
 				  case array:get(C, Array) of
 				      undefined ->
 					  array:set(C, set, Array);
-				      _ ->		      
+				      _ ->
 					  false
 				  end;
 			     true ->
@@ -206,7 +213,50 @@ foldint0(F, InitalAcc, From, From) ->
 foldint0(_, Acc, From, To) when From > To ->
     Acc.
 
-    
 
+
+
+
+rev_digit_sum(N) ->
+    N + list_to_integer(lists:map(fun(X) -> X + $0 end, 
+				  lists:reverse(digits(N)))).
+
+is_palindrom(N) ->
+    List = integer_to_list(N),
+    List == lists:reverse(List).
+
+is_lychrel(N) ->
+    is_lychrel(N, 1).
+is_lychrel(N, Iter) when Iter < 50 ->
+    RevSum = rev_digit_sum(N),
+    %% erlang:display({revsum, RevSum}),
+    case is_palindrom(RevSum) of
+	true ->
+	    {Iter, N, RevSum};
+	false ->
+	    is_lychrel(RevSum, Iter+1)
+    end;
+is_lychrel(_, _) ->
+    true.
+
+
+lychrel() ->
+    lychrel(9999, []).
+
+lychrel(9,Acc) ->
+    Acc;
+lychrel(N,Acc) ->
+    case is_lychrel(N) of
+	true ->
+	    %% erlang:display({lychrel, N}),
+	    lychrel(N-1, [N|Acc]);
+	_ ->
+	    lychrel(N-1, Acc)
+    end.
+
+
+
+
+
+			     
     
-			    
