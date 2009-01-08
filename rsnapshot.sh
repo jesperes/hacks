@@ -1,11 +1,9 @@
 #!/bin/bash
 
-set -x
-
 # Wrapper script around rsnapshot to identify my external usb-drive.
 # It checks all mounted drives under /media/ and searches for a
 # special UUID-named file.
-function get_backup_drive() 
+function get_backup_drive()
 {
     for f in /media/*; do
 	if [ -d $f ] && [ -f $f/2ebc3fd6-7ffa-11dd-bc92-0017a4e4c205 ]; then
