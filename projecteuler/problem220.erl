@@ -16,8 +16,10 @@ direction(N) ->
     case (((N band -N) bsl 1) band N) of
 	0 ->
 	    left;
-	_ ->
+	1 ->
 	    right
     end.
 
+
+plotdragon(Str) ->
 

@@ -13,10 +13,3 @@ p53() ->
 		 [ comb(N,R) || N <- lists:seq(1, 100),
 				R <- lists:seq(1, 100),
 				N >= R ]).
-
-    
-
-
-
-
-    
