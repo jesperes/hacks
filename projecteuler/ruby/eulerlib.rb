@@ -109,10 +109,42 @@ def sieve(limit)
   raise
 end
 
+def is_prime?(n)
+  return false if n <= 1
+  return true if n == 2 or n == 3
+  return false if n % 2 == 0 or n % 3 == 0
+
+  r = Math.sqrt(n).floor
+  f = 5
+  while f <= r
+    return false if ((n % f) == 0) or (n % (f + 2)) == 0
+    f += 6
+  end
+
+  return true
+end
+
+def get_next_prime(n)
+  return 3 if n == 2
+  p = n + 2
+  while not is_prime?(p)
+    p += 2
+  end
+  return p
+end
+
 if __FILE__ == $0
   # puts perfect(ARGV.shift.to_i)
   # puts num_distinct_prime_divisors(ARGV.shift.to_i, {})
   # puts problem47().inspect
-  primes = sieve(ARGV.shift.to_i)
-  puts primes.length
+  #primes = sieve(ARGV.shift.to_i)
+  #puts primes.length
+
+  p = 2
+  sum = 0
+  while p < 2000000
+    sum += p
+    p = get_next_prime(p)
+  end
+  puts sum
 end

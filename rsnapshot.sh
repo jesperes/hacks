@@ -27,7 +27,4 @@ perl -i -pe "s@BACKUP_MEDIA@$budrive@g" $conf
 perl -i -pe "s@HOSTNAME@`uname -n`@g" $conf
 
 action=$1
-if [ $action = sync ]; then
-    echo Backup to: $budrive
-fi
 $RSNAPSHOT -c $conf $action
