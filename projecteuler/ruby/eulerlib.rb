@@ -124,13 +124,38 @@ def is_prime?(n)
   return true
 end
 
+@@next_prime = { 2 => 3 }
 def get_next_prime(n)
-  return 3 if n == 2
-  p = n + 2
-  while not is_prime?(p)
-    p += 2
+  if @@next_prime.has_key?(n)
+    return @@next_prime[n]
+  else
+    p = n + 2
+    while not is_prime?(p)
+      p += 2
+    end
+
+    @@next_prime[n] = p
+    return p
   end
-  return p
+end
+
+class Fixnum
+  def each_prime(limit = 0)
+    n = self
+    return unless is_prime?(n)
+    while true
+      return if limit > 0 and n > limit
+      yield n
+      n = get_next_prime(n)
+    end
+  end
+end
+
+def time
+  t0 = Time.now
+  yield
+  t0 = Time.now - t0
+  puts t0
 end
 
 if __FILE__ == $0
@@ -140,11 +165,14 @@ if __FILE__ == $0
   #primes = sieve(ARGV.shift.to_i)
   #puts primes.length
 
-  p = 2
-  sum = 0
-  while p < 2000000
-    sum += p
-    p = get_next_prime(p)
+  def sum_primes(n)
+    sum = 0
+    2.each_prime(n) do |p|
+      sum += p
+    end
+    return sum
   end
-  puts sum
+
+  time { puts sum_primes(1000000) }
+  time { puts sum_primes(1000000) }
 end
