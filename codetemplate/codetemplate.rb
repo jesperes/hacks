@@ -67,6 +67,7 @@ IO.readlines(template_file).each do |line|
     f.close if f
     f = File.new(File.join(source_dir, file), "w")
     puts "Writing #{f.path}"
+    next
   end
 
   f.print replace_vars(line, vars)
