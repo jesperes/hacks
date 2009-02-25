@@ -21,3 +21,5 @@ direction(N) ->
     end.
 
 
+plotdragon(Str) ->
+
