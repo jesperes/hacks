@@ -12,7 +12,7 @@ public:
   ${CLASSNAME}();
   virtual ~${CLASSNAME}();
 private:
-}
+};
 
 #endif // ${CLASSNAME_UPPER}_H
 --- source=${CLASSNAME}.cpp ---
