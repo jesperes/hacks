@@ -29,8 +29,16 @@ end
 
 print_templates
 
-default_template = File.basename(get_templates[0], ".template")
+if ARGV.length > 0
+  default_template = ARGV.shift
+else
+  default_template = File.basename(get_templates[0], ".template")
+end
 template = read_prompt("Template name", default_template)
+
+template_file = get_templates().find { |t| File.basename(t) =~ /^#{template}.*/ }
+puts "Using template: #{File.basename(template_file)}"
+
 source_dir = read_prompt("Source dir", Dir.pwd)
 classname = read_prompt("Classname")
 file_prefix = ""
@@ -57,7 +65,6 @@ def replace_vars(s, vars)
   return s
 end
 
-template_file = File.join(File.dirname(__FILE__), template + ".template")
 
 f = nil
 IO.readlines(template_file).each do |line|
@@ -67,6 +74,13 @@ IO.readlines(template_file).each do |line|
     f.close if f
     f = File.new(File.join(source_dir, file), "w")
     puts "Writing #{f.path}"
+    next
+  elsif line =~ /^=== query=(.*),(.*)===/
+    var = $1.strip
+    prompt = $2.strip
+    value = read_prompt(prompt)
+    vars[var] = value
+    vars[var + "_UPPER"] = value.upcase
     next
   end
 
