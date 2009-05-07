@@ -5,6 +5,12 @@ if [ `whoami` != "root" ]; then
     exec sudo "$0" "$@"
 fi
 
+# Check if the cisco_ipsec module exists
+if [ ! -f /lib/modules/`uname -r`/CiscoVPN/cisco_ipsec.ko ]; then
+    echo "No kernel module available. Attempting to build one."
+    . `dirname "$0"`/vpn-build.sh
+fi
+
 # Remove cisco_ipsec kernel module
 if lsmod | grep -q cisco_ipsec; then
     rmmod -v cisco_ipsec

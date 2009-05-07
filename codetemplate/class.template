@@ -1,0 +1,34 @@
+--- header=${CLASSNAME}.h ---
+/*
+ * Header file for class ${CLASSNAME}
+ */
+
+#ifndef ${CLASSNAME_UPPER}_H
+#define ${CLASSNAME_UPPER}_H
+
+class ${CLASSNAME}
+{
+public:
+  ${CLASSNAME}();
+  virtual ~${CLASSNAME}();
+private:
+};
+
+#endif // ${CLASSNAME_UPPER}_H
+--- source=${CLASSNAME}.cpp ---
+/*
+ * Source file for ${CLASSNAME}
+ */
+
+#include "GeStd.h"
+#include "DcCommon.h"
+
+#include "${CLASSNAME}.h"
+
+${CLASSNAME}::${CLASSNAME}()
+{
+}
+
+${CLASSNAME}::~${CLASSNAME}()
+{
+}

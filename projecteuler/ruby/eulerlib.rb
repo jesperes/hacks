@@ -109,10 +109,70 @@ def sieve(limit)
   raise
 end
 
+def is_prime?(n)
+  return false if n <= 1
+  return true if n == 2 or n == 3
+  return false if n % 2 == 0 or n % 3 == 0
+
+  r = Math.sqrt(n).floor
+  f = 5
+  while f <= r
+    return false if ((n % f) == 0) or (n % (f + 2)) == 0
+    f += 6
+  end
+
+  return true
+end
+
+@@next_prime = { 2 => 3 }
+def get_next_prime(n)
+  if @@next_prime.has_key?(n)
+    return @@next_prime[n]
+  else
+    p = n + 2
+    while not is_prime?(p)
+      p += 2
+    end
+
+    @@next_prime[n] = p
+    return p
+  end
+end
+
+class Fixnum
+  def each_prime(limit = 0)
+    n = self
+    return unless is_prime?(n)
+    while true
+      return if limit > 0 and n > limit
+      yield n
+      n = get_next_prime(n)
+    end
+  end
+end
+
+def time
+  t0 = Time.now
+  yield
+  t0 = Time.now - t0
+  puts t0
+end
+
 if __FILE__ == $0
   # puts perfect(ARGV.shift.to_i)
   # puts num_distinct_prime_divisors(ARGV.shift.to_i, {})
   # puts problem47().inspect
-  primes = sieve(ARGV.shift.to_i)
-  puts primes.length
+  #primes = sieve(ARGV.shift.to_i)
+  #puts primes.length
+
+  def sum_primes(n)
+    sum = 0
+    2.each_prime(n) do |p|
+      sum += p
+    end
+    return sum
+  end
+
+  time { puts sum_primes(1000000) }
+  time { puts sum_primes(1000000) }
 end

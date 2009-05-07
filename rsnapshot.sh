@@ -20,14 +20,18 @@ home=$(cd $(dirname "$0"); pwd)
 conf_tmpl=$home/rsnapshot.conf.tmpl
 conf=$home/rsnapshot.conf
 budrive=`get_backup_drive`/backups
-[ -z "$budrive" ] && exit 1
+if [ ! -d "$budrive" ]; then
+    echo "`date`: Could not find backup drive. Exiting."
+    exit 1
+fi
 
 cp $conf_tmpl $conf
 perl -i -pe "s@BACKUP_MEDIA@$budrive@g" $conf
 perl -i -pe "s@HOSTNAME@`uname -n`@g" $conf
 
 action=$1
-if [ $action = sync ]; then
-    echo Backup to: $budrive
+if $RSNAPSHOT -c $conf $action; then
+    echo "`date`: Backup completed successfully."
+else
+    echo "`date`: Backup failed."
 fi
-$RSNAPSHOT -c $conf $action

@@ -15,10 +15,14 @@ done
 
 tar zxf $TARBALL
 
-(cd vpnclient; 
+(cd vpnclient;
+    echo "Patching source code..."
     for p in $PATCHES; do
 	patch < ../$p
     done;
-    yes "" | sudo apt-get install linux-headers-`uname -r`
-    yes "" | sudo ./vpn_install
+    echo "Installing kernel headers..."
+    (yes "" | sudo apt-get install linux-headers-`uname -r`) > vpnbuild.log
+    echo "Building kernel modules..."
+    (yes "" | sudo ./vpn_install) >>vpnbuild.log
     )
+echo "Done."
