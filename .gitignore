@@ -8,3 +8,8 @@ rsnapshot.conf
 projecteuler/java/euler/bin/
 gmon.out
 java/*/bin
+Debug
+*.ncb
+*.suo
+*.vcproj.*.user
+
