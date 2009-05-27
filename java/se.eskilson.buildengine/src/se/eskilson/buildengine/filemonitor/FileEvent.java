@@ -11,17 +11,30 @@ public class FileEvent {
 	};
 
 	private final Action action;
-	private final MonitoredFile file;
+	private final IMonitoredFile file;
 	private final Date timeStamp;
 
-	public FileEvent(MonitoredFile file, Action action) {
+	public FileEvent(IMonitoredFile file, Action action) {
 		this.action = action;
 		this.file = file;
 		this.timeStamp = new Date();
 	}
 
+	public Action getAction() {
+		return action;
+	}
+
+	public IMonitoredFile getMonitoredFile() {
+		return file;
+	}
+
+	public Date getTimeStamp() {
+		return timeStamp;
+	}
+
 	@Override
 	public String toString() {
-		return String.format("FileEvent<%s, %s, %s>", action, file, timeStamp);
+		return String.format("FileEvent<%s, %s, event-timestamp=%s>", action,
+				file, timeStamp);
 	}
 }
