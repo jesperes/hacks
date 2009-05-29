@@ -7,3 +7,4 @@ erl_crash.dump
 rsnapshot.conf
 projecteuler/java/euler/bin/
 gmon.out
+*/bin/*
