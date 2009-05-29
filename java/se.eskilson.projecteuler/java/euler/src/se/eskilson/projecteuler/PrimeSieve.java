@@ -1,4 +1,4 @@
-package projecteuler;
+package se.eskilson.projecteuler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
