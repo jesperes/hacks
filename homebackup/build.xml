@@ -1,13 +1,17 @@
-<!-- Backup script using Cygwin's rsync/find/rm. -->
-
 <project
    name="homebackup"
    default="backup">
-  <property name="backupdir" value="/cygdrive/d/backup"/>
-  <property name="incr.dir" value="/cygdrive/d/backup-incr"/>
-  <property name="incr.dayssaved" value="30"/>
-  <property name="cygwin" value="c:/cygwin"/>
 
+  <taskdef resource="net/sf/antcontrib/antlib.xml">
+    <classpath>
+      <pathelement location="ant-contrib.jar" />
+    </classpath>
+  </taskdef>
+
+  <property name="backupdir" location="f:/backup"/>
+  <property name="incr.dir" value="f:/backup-incr"/>
+  <property name="incr.dayssaved" value="30"/>
+  <property environment="env"/>
   <property name="MailLogger.mailhost" value="mailout.comhem.se"/>
   <property name="MailLogger.from" value="jesper@eskilson.se"/>
   <property name="MailLogger.success.to" value="jesper@eskilson.se"/>
@@ -15,88 +19,42 @@
   <property name="MailLogger.success.subject" value="Backup success"/>
   <property name="MailLogger.failure.subject" value="Backup failure"/>
 
+  <target name="copy-modified">
+
+    <echo>Copying ${srcdir} to ${destdir}</echo>
+    <echo>${env.USERPROFILE}</echo>
+    <copy todir="${destdir}" preservelastmodified="true" verbose="yes" failonerror="false">
+      <fileset dir="${srcdir}">
+	<modified/>
+	<exclude name="**/Temporary Internet Files"/>
+	<exclude name="**/ntuser.dat*"/>
+	<exclude name="**/NTUSER.DAT*"/>
+	<exclude name="**/UsrClass*"/>
+	<exclude name="**/Mozilla/**/Cache"/>
+	<exclude name="**/AppData/Local/Temp"/>
+
+	<!-- these do not work, possibly some Vista magic with filenames and aliases -->
+
+	<exclude name="${env.USERPROFILE}/Documents/Min musik"/>
+	<!-- exclude name="**/Mina videoklipp"/>
+	<exclude name="**/Mina bilder"/ -->
+      </fileset>
+    </copy>
+  </target>
+
+  <!-- ,Desktop,Pictures,Downloads -->
   <target name="backup">
-    <tstamp/>
-    <property name="incr.dir.full"
-	      value="${incr.dir}/${DSTAMP}-${TSTAMP}"/>
-
-    <echo>Rsyncing...</echo>
-    <exec executable="${cygwin}/bin/rsync.exe">
-
-      <!-- rsync options -->
-      <arg value="-vrulto"/>
-      <arg value="--delete"/>
-      <arg value="--delete-excluded"/>
-      <arg value="--modify-window=1"/>
-      <arg value="--backup"/>
-      <arg value="--backup-dir"/>
-      <arg value="${incr.dir.full}"/>
-
-      <!-- Exclude rules: files/directories which should not be backed
-	   up, either because they are to big or because they are
-	   normally locked, which would cause rsync to fail.  -->
-
-      <arg value="--exclude=NTUSER.DAT"/>
-      <arg value="--exclude=ntuser.dat.LOG"/>
-      <arg value="--exclude=UsrClass.dat"/>
-      <arg value="--exclude=UsrClass.dat.LOG"/>
-      <arg value="--exclude=Temporary Internet Files"/>
-      <arg value="--exclude=Thunderbird/**/parent.lock"/>
-      <arg value="--exclude=Mozilla/**/parent.lock"/>
-      <arg value="--exclude=Temp"/>
-      <arg value="--exclude=SecuROM"/>
-      <arg value="--exclude=Application Data/Google/Google Desktop"/>
-      <arg value="--exclude=Application Data/Google/Chrome"/>
-      <arg value="--exclude=Application Data/Last.fm/**/cache"/>
-      <arg value="--exclude=RECYCLER"/>
-      <arg value="--exclude=System Volume Information"/>
-      <arg value="--exclude=.plugins/*/.history"/>
-      <arg value="--exclude=Mozilla/**/Cache"/>
-      <arg value="--exclude=Mozilla/**/Profiles/*/places.sqlite*"/>
-      <arg value="--exclude=*.gcf"/>
-      <arg value="--exclude=*.bmc"/>
-      <arg value="--exclude=Picasa2/**/*.db"/>
-      <arg value="--exclude=**/video/ISO"/>
-      <arg value="--exclude=iPod Photo Cache"/>
-      <arg value="--exclude=auto-save-list"/>
-      <arg value="--exclude=Torrents/Active"/>
-      <arg value="--exclude=Acrobat/**/updater.log"/>
-
-      <!-- source directories -->
-      <arg value="/cygdrive/e"/>
-      <arg value="/cygdrive/c/Documents and Settings/Jesper"/>
-
-      <!-- target directory -->
-      <arg value="${backupdir}/"/>
-    </exec>
-
-    <echo>Removing old incrementals...</echo>
-
-    <!-- Remove incrementals older than ${incr.dayssaved} days. -->
-    <exec executable="${cygwin}/bin/find.exe">
-      <arg value="${incr.dir}/"/>
-      <arg value="-mindepth"/>
-      <arg value="1"/>
-      <arg value="-maxdepth"/>
-      <arg value="1"/>
-      <arg value="-type"/>
-      <arg value="d"/>
-      <arg value="-mtime"/>
-      <arg value="+${incr.dayssaved}"/>
-      <arg value="-print"/>
-      <arg value="-exec"/>
-      <arg value="${cygwin}/bin/rm.exe"/>
-      <arg value="-r"/>
-      <arg value="{}"/>
-      <arg value=";"/>
-    </exec>
-
-    <echo>Calculating backup size</echo>
-    <exec executable="${cygwin}/bin/du.exe">
-      <arg value="--max-depth=1"/>
-      <arg value="${backupdir}"/>
-      <arg value="${incr.dir}"/>
-    </exec>
-    <echo>Done.</echo>
+    <for list="Documents,Desktop,Pictures,Downloads" param="userprof.dir">
+      <sequential>
+	<antcall target="copy-modified">
+	  <param name="srcdir" location="${env.USERPROFILE}/@{userprof.dir}"/>
+	  <param name="destdir" location="${backupdir}/${env.USERNAME}/@{userprof.dir}"/>
+	</antcall>
+      </sequential>
+    </for>
+    <antcall target="copy-modified">
+      <param name="srcdir" location="d:/"/>
+      <param name="destdir" location="${backupdir}/D-drive"/>
+    </antcall>
   </target>
 </project>
