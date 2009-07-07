@@ -8,7 +8,7 @@ power(Base, Exp) when (Exp rem 2) == 0 ->
     HalfBase * HalfBase;
 power(Base, Exp) ->
     Base * power(Base, Exp-1).
-    
+
 floor(X) ->
     T = trunc(X),
     case X - T < 0 of
@@ -54,13 +54,13 @@ is_prime(N, F, R) ->
 %% Sieve of Erastosthenes
 eratosthenes(Limit) ->
     Sieve = sieve(3, initial_sieve(Limit), floor(math:sqrt(Limit))),
-    PrimeList = 
+    PrimeList =
         array:to_list(array:map(
                         fun
-                           (_, true) -> 
+                           (_, true) ->
                                 notprime ;
-                           (I, false) -> 
-                                I 
+                           (I, false) ->
+                                I
                         end, Sieve)),
     lists:filter(
       fun(notprime) ->
@@ -73,7 +73,7 @@ eratosthenes(Limit) ->
 %% are NOT primes.
 initial_sieve(Limit) ->
     array:map(
-      fun(N, _) -> 
+      fun(N, _) ->
 	      if N < 2 ->
 		      true;
 		 N == 2 ->
@@ -105,10 +105,10 @@ sieve(N, Sieve, CrossLimit) ->
 	    sieve(Next, crossout(N*N, Sieve, 2*N), CrossLimit);
 
 	%% N is marked, hence not prime. Continue with next.
-	%% 
+	%%
 	_ ->
 	    sieve(Next, Sieve, CrossLimit)
-    end.	   
+    end.
 
 
 %% Brute force version of finding the number of divisors.
@@ -131,6 +131,9 @@ digits0(N) when N < 10 ->
     [N];
 digits0(N) ->
     [N rem 10|digits0(N div 10)].
+
+num_digits(N) ->
+    digits0(N).
 
 %% Factorial function
 fac(1) -> 1;
