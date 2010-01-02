@@ -14,5 +14,4 @@ public class Alfapet {
 
 		System.out.println(new Board());
 	}
-
 }
