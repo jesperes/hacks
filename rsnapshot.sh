@@ -8,8 +8,8 @@ RSNAPSHOT=/usr/bin/rsnapshot
 function get_backup_drive()
 {
     for f in /media/*/2ebc3fd6-7ffa-11dd-bc92-0017a4e4c205; do
-	dirname "$f"
-	return 0
+        dirname "$f"
+        return 0
     done
 
     echo "Backup drive not found." >&2
@@ -31,7 +31,10 @@ perl -i -pe "s@HOSTNAME@`uname -n`@g" $conf
 
 action=$1
 if $RSNAPSHOT -c $conf $action; then
-    echo "`date`: Backup completed successfully."
+    if [ $action = sync ]; then
+        :
+        # echo "`date`: Backup completed successfully."
+    fi
 else
     echo "`date`: Backup failed."
 fi

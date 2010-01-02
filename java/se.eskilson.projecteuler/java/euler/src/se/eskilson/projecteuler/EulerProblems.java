@@ -1,4 +1,4 @@
-package projecteuler;
+package se.eskilson.projecteuler;
 
 import java.io.PrintStream;
 import java.math.BigInteger;
