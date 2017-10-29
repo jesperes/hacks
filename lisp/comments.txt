@@ -1,0 +1,14 @@
+Comments on how high-speed-lisp.c works
+=======================================
+
+Uses a set of arrays of fixed size to store atoms, numbers, bindings, etc.
+
+For example, the array car[] holds car-pointers. A cons-cell is
+represented by an integer n. The cons-cell's car cell can be looked up
+by car[n].
+
+Function cons(long x, long y) returns a new free node and place x and y in it.
+
+
+Lisp interpreter should without big problems be possible to fit onto a
+Cortex-M board.
