@@ -1,0 +1,342 @@
+# Title:
+# Original_Title:
+# Director:
+# Actors:
+# Soundtrack:
+# Length:
+# Year:
+# Region:
+# Format: (DVD, DivX-fil, etc.) + (bildformat)
+# Rating: PG, PG-13, R, 7/11/15 år, etc.
+# Audio: Ljudspår (om annat än engelska)
+# Discs: Antal skivor
+# Category: Drama, Science Fiction, Action, etc.
+# Notes:
+# Media: { DVD, DivX, ... }
+
+Title: Mission: Impossible - 2
+Director: John Woo
+Actors: Tom Cruise, Thandie Newton, Dougray Scott, Anthony Hopkins
+Soundtrack: Hans Zimmer
+Length: 123
+Year: 2000
+Region: 1
+Format: anamorphic 2.35
+Rating: PG-13
+Audio: English, French
+Discs: 1
+Category: Action
+Notes: Ej svensk text
+Media: DVD
+
+Title: Matrix Reloaded
+Director: The Wachowski Brothers
+Actors: Keanu Reeves, Lawrence Fishburne, Carrie-Anne Moss, Hugo Weaving
+Soundtrack: Don Davis
+Length: 132
+Year: 2003
+Format: anamorphic 2.40
+Region: 2
+Discs: 2
+Category: Science Fiction, Action
+Rating: 11 år
+Media: DVD
+
+Title: Hero
+Director: Zhang Yimou
+Actors: Jet Li, Tony Leung Chiu-Wai, Maggie Cheung Man-Yuk
+Soundtrack: Tan Dun
+Length: 95
+Year: 2002
+Region: 2
+Audio: Kinesiska
+Category: Action/Drama
+Format: anamorphic 2.35
+Rating: 11 år
+Media: DVD
+
+Title: Monsters, Inc.
+Category: Animated
+Length: 88
+Rating: 7 år
+Year: 2001
+Discs: 1
+Format: anamorphic 1.78
+Media: DVD
+
+Title: Hitta Nemo
+Original_Title: Finding Nemo
+Category: Animated
+Rating: 7 år
+Year: 2003
+Length: 96
+Format: anamorphic 1.78
+Discs: 2
+Media: DVD
+
+Title: När Lammen Tystnar
+Original_Title: Silence of the Lambs
+Discs: 2
+Year: 1990
+Actors: Anthony Hopkins, Jodie Foster, Scott Glenn, Ted Levine
+Director: Jonathan Demme
+Soundtrack: Howard Shore
+Format: anamorphic 1.85
+Length: 113
+Region: 2
+Rating: 15 år
+Discs: 1
+Category: Thriller
+Media: DVD
+
+Title: Red Dragon
+Director: Brett Ratner
+Actors: Anthony Hopkins, Edward Norton, Ralph Fiennes, Harvey Keitel, Emily Watson, Mary-Louise Parker, Philip Seymour Hoffman
+Soundtrack: Danny Elfman
+Length: 120
+Year: 2002
+Region: 2
+Format: anamorphic 2.35
+Rating: 15 år
+Discs: 2
+Category: Thriller
+Media: DVD
+
+Title: Deep Blue Sea
+Director: Renny Harlin
+Actors: Thomas Jane, LL Cool J, Michael Rapaport, Stellan Skarsgård, Samuel L. Jackson, Jaqueline McKenzie
+Soundtrack: Trevor Rabin
+Length: 101
+Year: 1999
+Region: 2
+Format: anamorphic 2.35
+Rating: 15 år
+Discs: 1
+Category: Action
+Media: DVD
+
+Title:		Lejonkungen
+Original_Title: The Lion King
+Length:		85
+Year:		1994
+Region:		2
+Format:		anamorphic 1.66
+Rating:		7 år
+Discs:		2
+Category:	Animated
+Media: DVD
+
+Title:		On Her Majesty's Secret Service
+Director:	Peter Hunt
+Actors:		George Lazenby, Diana Rigg, Telly Savalas
+Soundtrack:	John Barry
+Length:		142
+Year:		1969
+Region:		1
+Format:		Widescreen
+Rating:		PG
+Discs:		1
+Category:	Action
+Media: DVD
+
+Title:		Dr. No
+Director:	Terence Young
+Actors:		Sean Connery, Ursula Andress, Joseph Wiseman, Jack Lord
+Soundtrack:	Monty Norman
+Length:		110
+Year:		1962
+Region:		1
+Format:		Widescreen
+Rating:		PG
+Discs:		1
+Category:	Action
+Media: DVD
+
+Title:		Åter Till Cold Mountain
+Original_Title:	Cold Mountain
+Director:	Anthony Minghella
+Actors:		Jude Law, Nicole Kidman, Renée Zellweger
+Soundtrack:	Gabriel Yared
+Length:		148
+Year:		2003
+Region:		2
+Format:		anamorphic 2.35
+Rating:		11 år
+Discs:		1
+Category:	Drama
+Media: DVD
+
+Title:		Time Bandits
+Director:	Terry Gilliam
+Actors:		Sean Connery, John Cleese, Michael Palin, Ian Holm
+Soundtrack:	George Harrison and Mike Moran
+Length:		112
+Year:		1981
+Region:		2
+Format:		Letterbox 1.85 (?)
+Rating:		8 år
+Discs:		1
+Category:	Komedi
+Media: DVD
+
+Title:		The Spy Who Loved Me
+Director:	Lewis Gilbert
+Actors:		Roger Moore, Barbara Bach, Curt Jurgens
+Soundtrack:	Marvin Hamlisch
+Length:		125
+Year:		1977
+Region:		1
+Format:		Widescreen
+Rating:		PG
+Discs:		1
+Category:	Action
+Media: DVD
+
+Title:		Starship Troopers
+Director:	Paul Verhoeven
+Actors:		Casper Van Dien, Dina Meyer, Denise Richards, Jake Busey, Michael Ironside
+Soundtrack:	Basil Poledouris
+Length:		125
+Year:		1997
+Region:		2
+Format:		anamorphic 1.85
+Rating:		15 år
+Discs:		1
+Category:	Science Fiction, Action
+Media: DVD
+
+Title:		Batman
+Director:	Tim Burton
+Actors:		Michael Keaton, Jack Nicholson, Kim Basinger, Jack Palance
+Soundtrack:	Danny Elfman
+Length:		121
+Year:		1989
+Region:		2
+Format:		?
+Rating:		15 år
+Discs:		1
+Category:	Action
+Media: DVD
+
+Title:		I Am Sam
+Director:	Jessie Nelson
+Actors:		Sean Penn, Michell Pfeiffer
+Soundtrack:	John Powell
+Length:		125
+Year:		2001
+Region:		2
+Format:		anamorphic 1.85
+Rating:		7 år
+Discs:		1
+Category:	Drama
+Media: DVD
+
+Title:		Nasses STORA Film
+Original_Title:	Piglet's BIG Movie
+Length:		72
+Year:		2002
+Region:		2
+Format:		anamorphic 1.66
+Rating:		Barntillåten
+Category:	Barn, Animerat
+Media: DVD
+
+Title:		Matrix Revolutions
+Director:	The Wachowski Brothers
+Actors:		Keanu Reeves, Lawrence Fishburne, Carrie-Anne Moss, Hugo Weaving
+Soundtrack:	Don Davis
+Length:		124
+Year:		2003
+Region:		2
+Format:		anamorphic 2.40
+Rating:		15 år
+Discs:		2
+Category:	Science Fiction, Action
+Media: DVD
+
+Title:		Lethal Weapon 4
+Director:	Richard Donner
+Actors:		Mel Gibson, Danny Glover, Joe Pesci, Rene Russo, Chris Rock, Jet Li
+Soundtrack:	Michael Kamen
+Length:		122
+Year:		1998
+Region:		2
+Format:		anamorphic 2.35
+Rating:		15 år
+Discs:		1
+Category:	Action, Komedi
+Media: DVD
+
+Title:		The Matrix
+Director:	The Wachowski Brothers
+Actors:		Keanu Reeves, Lawrence Fishburne, Carrie-Anne Moss, Hugo Weaving, Joe Pantoliano
+Soundtrack:	Don Davis
+Length:		131
+Year:		1999
+Region:		2
+Format:		anamorphic 2.35 (?)
+Rating:		15 år
+Discs:		1
+Category:	Science Fiction, Action
+Media: DVD
+
+Title:		The Green Mile
+Format:		anamorphic 1.85
+Year:		1999
+Length:		188
+Media:		DivX
+
+Title:		Samsara
+Format:		anamorphic 1.85
+Length:		140
+Media:		DivX
+
+Title:		Vanilla Sky
+Length:		130
+Format:		anamorphic 1.85
+Media:		DivX
+
+Title:		Star Wars - Episode II
+Director:	George Lucas
+Actors:		Hayden Christiansen, Ewan McGregor, Natalie Portman
+Media:		DivX, DVD
+Length:		137
+Format:		anamorphic 2.35
+Year:		2002
+
+Title:		Star Wars - Episode IV
+Media:		DivX, DVD
+
+Title:		Star Wars - Episode V
+Media:		DivX, DVD
+
+Title:		Star Wars - Episode VI
+Media:		DivX, DVD
+
+Title:		The Blues Brothers
+Media:		DivX
+
+Title:		Mimic
+Director:	Guillermo Del Toro
+Actors:		Mira Sorvino, Charles Dutton
+Length:		105
+Region:		2
+Rating:		15 år
+Discs:		1
+Category:	Rysare
+Media:		DVD
+
+Title:		Aliens - Återkomsten
+Original_Title:	Aliens
+Director:	James Cameron
+Actors:		Sigourney Weaver
+Soundtrack:	James Horner
+Year:		1986
+Region:		2
+Format:		DVD
+Rating:		15 år
+Discs:		1
+Category:	Science Fiction
+Media:		DVD
+
+

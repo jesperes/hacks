@@ -1,0 +1,14 @@
+
+tl: definitions
+
+definitions: definition definitions
+
+definition: type_expr IDENTIFIER LPAR decl_list RPAR code_block
+
+expr:	  expr PLUS expr
+    	| expr MINUS expr
+	| expr ASTERISK expr
+	| expr SLASH expr
+	| INTEGER
+	| LPAR expr RPAR
+	;

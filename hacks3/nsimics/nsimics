@@ -1,0 +1,11 @@
+#!/bin/bash
+
+NSIMICS_HOME=$(cd $(dirname "$0"); pwd)
+
+SIMICS_BASE=$HOME/simics/current
+HOST_TYPE=x86-linux
+
+export PYTHONPATH=$SIMICS_BASE/$HOST_TYPE/bin/sft-python/lib/python
+export LD_LIBRARY_PATH=$SIMICS_BASE/$HOST_TYPE/bin
+
+exec $NSIMICS_HOME/nsimics.py "$@"

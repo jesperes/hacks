@@ -1,0 +1,603 @@
+
+
+Unused terminals:
+
+   RETURN
+   PERCENT
+   LBRACKET
+   VBAR
+   LSHIFT
+   FUN
+   RSHIFT
+   NEQ
+   GEQ
+   SEMICOLON
+   UNDERSCORE
+   QUESTION
+   BACKSLASH
+   LT
+   COLON
+   TILDE
+   ASSIGN
+   GT
+   DOLLAR
+   PERIOD
+   BANG
+   AMPERSAND
+   AT
+   ARROW
+   EQ
+   AND
+   LEQ
+   RBRACKET
+   OR
+
+Grammar
+
+Rule 1     tl -> definitions
+Rule 2     definitions -> <empty>
+Rule 3     definitions -> definitions definition
+Rule 4     definition -> type_expr IDENTIFIER LPAR arg_decl_list RPAR code_block
+Rule 5     type_expr -> INT
+Rule 6     type_expr -> STRING
+Rule 7     type_expr -> LIST
+Rule 8     arg_decl_list -> arg_decl
+Rule 9     arg_decl_list -> arg_decl_list COMMA arg_decl
+Rule 10    arg_decl -> type_expr IDENTIFIER
+Rule 11    code_block -> LBRACE statements RBRACE
+Rule 12    statements -> <empty>
+Rule 13    statements -> statements statement
+Rule 14    statement -> expr
+Rule 15    expr -> expr PLUS expr
+Rule 16    expr -> expr MINUS expr
+Rule 17    expr -> expr ASTERISK expr
+Rule 18    expr -> expr SLASH expr
+Rule 19    expr -> LPAR expr RPAR
+Rule 20    expr -> INTEGER
+
+Terminals, with rules where they appear
+
+AMPERSAND            : 
+AND                  : 
+ARROW                : 
+ASSIGN               : 
+ASTERISK             : 17
+AT                   : 
+BACKSLASH            : 
+BANG                 : 
+COLON                : 
+COMMA                : 9
+DOLLAR               : 
+EQ                   : 
+FUN                  : 
+GEQ                  : 
+GT                   : 
+IDENTIFIER           : 4 10
+INT                  : 5
+INTEGER              : 20
+LBRACE               : 11
+LBRACKET             : 
+LEQ                  : 
+LIST                 : 7
+LPAR                 : 4 19
+LSHIFT               : 
+LT                   : 
+MINUS                : 16
+NEQ                  : 
+OR                   : 
+PERCENT              : 
+PERIOD               : 
+PLUS                 : 15
+QUESTION             : 
+RBRACE               : 11
+RBRACKET             : 
+RETURN               : 
+RPAR                 : 4 19
+RSHIFT               : 
+SEMICOLON            : 
+SLASH                : 18
+STRING               : 6
+TILDE                : 
+UNDERSCORE           : 
+VBAR                 : 
+error                : 
+
+Nonterminals, with rules where they appear
+
+arg_decl             : 8 9
+arg_decl_list        : 4 9
+code_block           : 4
+definition           : 3
+definitions          : 1 3
+expr                 : 14 15 15 16 16 17 17 18 18 19
+statement            : 13
+statements           : 11 13
+tl                   : 0
+type_expr            : 4 10
+
+
+Parsing method: SLR
+
+
+state 0
+
+    (0) S' -> . tl
+    (1) tl -> . definitions
+    (2) definitions -> .
+    (3) definitions -> . definitions definition
+
+    $               reduce using rule 2 (definitions -> .)
+    INT             reduce using rule 2 (definitions -> .)
+    STRING          reduce using rule 2 (definitions -> .)
+    LIST            reduce using rule 2 (definitions -> .)
+
+
+    definitions     shift and go to state 1
+    tl              shift and go to state 2
+
+state 1
+
+    (1) tl -> definitions .
+    (3) definitions -> definitions . definition
+    (4) definition -> . type_expr IDENTIFIER LPAR arg_decl_list RPAR code_block
+    (5) type_expr -> . INT
+    (6) type_expr -> . STRING
+    (7) type_expr -> . LIST
+
+    $               reduce using rule 1 (tl -> definitions .)
+    INT             shift and go to state 5
+    STRING          shift and go to state 3
+    LIST            shift and go to state 6
+
+
+    type_expr       shift and go to state 7
+    definition      shift and go to state 4
+
+state 2
+
+    (0) S' -> tl .
+
+
+
+
+state 3
+
+    (6) type_expr -> STRING .
+
+    IDENTIFIER      reduce using rule 6 (type_expr -> STRING .)
+
+
+
+state 4
+
+    (3) definitions -> definitions definition .
+
+    $               reduce using rule 3 (definitions -> definitions definition .)
+    INT             reduce using rule 3 (definitions -> definitions definition .)
+    STRING          reduce using rule 3 (definitions -> definitions definition .)
+    LIST            reduce using rule 3 (definitions -> definitions definition .)
+
+
+
+state 5
+
+    (5) type_expr -> INT .
+
+    IDENTIFIER      reduce using rule 5 (type_expr -> INT .)
+
+
+
+state 6
+
+    (7) type_expr -> LIST .
+
+    IDENTIFIER      reduce using rule 7 (type_expr -> LIST .)
+
+
+
+state 7
+
+    (4) definition -> type_expr . IDENTIFIER LPAR arg_decl_list RPAR code_block
+
+    IDENTIFIER      shift and go to state 8
+
+
+
+state 8
+
+    (4) definition -> type_expr IDENTIFIER . LPAR arg_decl_list RPAR code_block
+
+    LPAR            shift and go to state 9
+
+
+
+state 9
+
+    (4) definition -> type_expr IDENTIFIER LPAR . arg_decl_list RPAR code_block
+    (8) arg_decl_list -> . arg_decl
+    (9) arg_decl_list -> . arg_decl_list COMMA arg_decl
+    (10) arg_decl -> . type_expr IDENTIFIER
+    (5) type_expr -> . INT
+    (6) type_expr -> . STRING
+    (7) type_expr -> . LIST
+
+    INT             shift and go to state 5
+    STRING          shift and go to state 3
+    LIST            shift and go to state 6
+
+
+    type_expr       shift and go to state 11
+    arg_decl        shift and go to state 10
+    arg_decl_list   shift and go to state 12
+
+state 10
+
+    (8) arg_decl_list -> arg_decl .
+
+    RPAR            reduce using rule 8 (arg_decl_list -> arg_decl .)
+    COMMA           reduce using rule 8 (arg_decl_list -> arg_decl .)
+
+
+
+state 11
+
+    (10) arg_decl -> type_expr . IDENTIFIER
+
+    IDENTIFIER      shift and go to state 13
+
+
+
+state 12
+
+    (4) definition -> type_expr IDENTIFIER LPAR arg_decl_list . RPAR code_block
+    (9) arg_decl_list -> arg_decl_list . COMMA arg_decl
+
+    RPAR            shift and go to state 14
+    COMMA           shift and go to state 15
+
+
+
+state 13
+
+    (10) arg_decl -> type_expr IDENTIFIER .
+
+    RPAR            reduce using rule 10 (arg_decl -> type_expr IDENTIFIER .)
+    COMMA           reduce using rule 10 (arg_decl -> type_expr IDENTIFIER .)
+
+
+
+state 14
+
+    (4) definition -> type_expr IDENTIFIER LPAR arg_decl_list RPAR . code_block
+    (11) code_block -> . LBRACE statements RBRACE
+
+    LBRACE          shift and go to state 17
+
+
+    code_block      shift and go to state 16
+
+state 15
+
+    (9) arg_decl_list -> arg_decl_list COMMA . arg_decl
+    (10) arg_decl -> . type_expr IDENTIFIER
+    (5) type_expr -> . INT
+    (6) type_expr -> . STRING
+    (7) type_expr -> . LIST
+
+    INT             shift and go to state 5
+    STRING          shift and go to state 3
+    LIST            shift and go to state 6
+
+
+    arg_decl        shift and go to state 18
+    type_expr       shift and go to state 11
+
+state 16
+
+    (4) definition -> type_expr IDENTIFIER LPAR arg_decl_list RPAR code_block .
+
+    $               reduce using rule 4 (definition -> type_expr IDENTIFIER LPAR arg_decl_list RPAR code_block .)
+    INT             reduce using rule 4 (definition -> type_expr IDENTIFIER LPAR arg_decl_list RPAR code_block .)
+    STRING          reduce using rule 4 (definition -> type_expr IDENTIFIER LPAR arg_decl_list RPAR code_block .)
+    LIST            reduce using rule 4 (definition -> type_expr IDENTIFIER LPAR arg_decl_list RPAR code_block .)
+
+
+
+state 17
+
+    (11) code_block -> LBRACE . statements RBRACE
+    (12) statements -> .
+    (13) statements -> . statements statement
+
+    RBRACE          reduce using rule 12 (statements -> .)
+    LPAR            reduce using rule 12 (statements -> .)
+    INTEGER         reduce using rule 12 (statements -> .)
+
+
+    statements      shift and go to state 19
+
+state 18
+
+    (9) arg_decl_list -> arg_decl_list COMMA arg_decl .
+
+    RPAR            reduce using rule 9 (arg_decl_list -> arg_decl_list COMMA arg_decl .)
+    COMMA           reduce using rule 9 (arg_decl_list -> arg_decl_list COMMA arg_decl .)
+
+
+
+state 19
+
+    (11) code_block -> LBRACE statements . RBRACE
+    (13) statements -> statements . statement
+    (14) statement -> . expr
+    (15) expr -> . expr PLUS expr
+    (16) expr -> . expr MINUS expr
+    (17) expr -> . expr ASTERISK expr
+    (18) expr -> . expr SLASH expr
+    (19) expr -> . LPAR expr RPAR
+    (20) expr -> . INTEGER
+
+    RBRACE          shift and go to state 21
+    LPAR            shift and go to state 20
+    INTEGER         shift and go to state 24
+
+
+    expr            shift and go to state 22
+    statement       shift and go to state 23
+
+state 20
+
+    (19) expr -> LPAR . expr RPAR
+    (15) expr -> . expr PLUS expr
+    (16) expr -> . expr MINUS expr
+    (17) expr -> . expr ASTERISK expr
+    (18) expr -> . expr SLASH expr
+    (19) expr -> . LPAR expr RPAR
+    (20) expr -> . INTEGER
+
+    LPAR            shift and go to state 20
+    INTEGER         shift and go to state 24
+
+
+    expr            shift and go to state 25
+
+state 21
+
+    (11) code_block -> LBRACE statements RBRACE .
+
+    $               reduce using rule 11 (code_block -> LBRACE statements RBRACE .)
+    INT             reduce using rule 11 (code_block -> LBRACE statements RBRACE .)
+    STRING          reduce using rule 11 (code_block -> LBRACE statements RBRACE .)
+    LIST            reduce using rule 11 (code_block -> LBRACE statements RBRACE .)
+
+
+
+state 22
+
+    (14) statement -> expr .
+    (15) expr -> expr . PLUS expr
+    (16) expr -> expr . MINUS expr
+    (17) expr -> expr . ASTERISK expr
+    (18) expr -> expr . SLASH expr
+
+    RBRACE          reduce using rule 14 (statement -> expr .)
+    LPAR            reduce using rule 14 (statement -> expr .)
+    INTEGER         reduce using rule 14 (statement -> expr .)
+    PLUS            shift and go to state 27
+    MINUS           shift and go to state 28
+    ASTERISK        shift and go to state 29
+    SLASH           shift and go to state 26
+
+
+
+state 23
+
+    (13) statements -> statements statement .
+
+    RBRACE          reduce using rule 13 (statements -> statements statement .)
+    LPAR            reduce using rule 13 (statements -> statements statement .)
+    INTEGER         reduce using rule 13 (statements -> statements statement .)
+
+
+
+state 24
+
+    (20) expr -> INTEGER .
+
+    RBRACE          reduce using rule 20 (expr -> INTEGER .)
+    LPAR            reduce using rule 20 (expr -> INTEGER .)
+    INTEGER         reduce using rule 20 (expr -> INTEGER .)
+    PLUS            reduce using rule 20 (expr -> INTEGER .)
+    MINUS           reduce using rule 20 (expr -> INTEGER .)
+    ASTERISK        reduce using rule 20 (expr -> INTEGER .)
+    SLASH           reduce using rule 20 (expr -> INTEGER .)
+    RPAR            reduce using rule 20 (expr -> INTEGER .)
+
+
+
+state 25
+
+    (19) expr -> LPAR expr . RPAR
+    (15) expr -> expr . PLUS expr
+    (16) expr -> expr . MINUS expr
+    (17) expr -> expr . ASTERISK expr
+    (18) expr -> expr . SLASH expr
+
+    RPAR            shift and go to state 30
+    PLUS            shift and go to state 27
+    MINUS           shift and go to state 28
+    ASTERISK        shift and go to state 29
+    SLASH           shift and go to state 26
+
+
+
+state 26
+
+    (18) expr -> expr SLASH . expr
+    (15) expr -> . expr PLUS expr
+    (16) expr -> . expr MINUS expr
+    (17) expr -> . expr ASTERISK expr
+    (18) expr -> . expr SLASH expr
+    (19) expr -> . LPAR expr RPAR
+    (20) expr -> . INTEGER
+
+    LPAR            shift and go to state 20
+    INTEGER         shift and go to state 24
+
+
+    expr            shift and go to state 31
+
+state 27
+
+    (15) expr -> expr PLUS . expr
+    (15) expr -> . expr PLUS expr
+    (16) expr -> . expr MINUS expr
+    (17) expr -> . expr ASTERISK expr
+    (18) expr -> . expr SLASH expr
+    (19) expr -> . LPAR expr RPAR
+    (20) expr -> . INTEGER
+
+    LPAR            shift and go to state 20
+    INTEGER         shift and go to state 24
+
+
+    expr            shift and go to state 32
+
+state 28
+
+    (16) expr -> expr MINUS . expr
+    (15) expr -> . expr PLUS expr
+    (16) expr -> . expr MINUS expr
+    (17) expr -> . expr ASTERISK expr
+    (18) expr -> . expr SLASH expr
+    (19) expr -> . LPAR expr RPAR
+    (20) expr -> . INTEGER
+
+    LPAR            shift and go to state 20
+    INTEGER         shift and go to state 24
+
+
+    expr            shift and go to state 33
+
+state 29
+
+    (17) expr -> expr ASTERISK . expr
+    (15) expr -> . expr PLUS expr
+    (16) expr -> . expr MINUS expr
+    (17) expr -> . expr ASTERISK expr
+    (18) expr -> . expr SLASH expr
+    (19) expr -> . LPAR expr RPAR
+    (20) expr -> . INTEGER
+
+    LPAR            shift and go to state 20
+    INTEGER         shift and go to state 24
+
+
+    expr            shift and go to state 34
+
+state 30
+
+    (19) expr -> LPAR expr RPAR .
+
+    RBRACE          reduce using rule 19 (expr -> LPAR expr RPAR .)
+    LPAR            reduce using rule 19 (expr -> LPAR expr RPAR .)
+    INTEGER         reduce using rule 19 (expr -> LPAR expr RPAR .)
+    PLUS            reduce using rule 19 (expr -> LPAR expr RPAR .)
+    MINUS           reduce using rule 19 (expr -> LPAR expr RPAR .)
+    ASTERISK        reduce using rule 19 (expr -> LPAR expr RPAR .)
+    SLASH           reduce using rule 19 (expr -> LPAR expr RPAR .)
+    RPAR            reduce using rule 19 (expr -> LPAR expr RPAR .)
+
+
+
+state 31
+
+    (18) expr -> expr SLASH expr .
+    (15) expr -> expr . PLUS expr
+    (16) expr -> expr . MINUS expr
+    (17) expr -> expr . ASTERISK expr
+    (18) expr -> expr . SLASH expr
+
+    RBRACE          reduce using rule 18 (expr -> expr SLASH expr .)
+    LPAR            reduce using rule 18 (expr -> expr SLASH expr .)
+    INTEGER         reduce using rule 18 (expr -> expr SLASH expr .)
+    PLUS            reduce using rule 18 (expr -> expr SLASH expr .)
+    MINUS           reduce using rule 18 (expr -> expr SLASH expr .)
+    ASTERISK        reduce using rule 18 (expr -> expr SLASH expr .)
+    SLASH           reduce using rule 18 (expr -> expr SLASH expr .)
+    RPAR            reduce using rule 18 (expr -> expr SLASH expr .)
+
+  ! PLUS            [ shift and go to state 27 ]
+  ! MINUS           [ shift and go to state 28 ]
+  ! ASTERISK        [ shift and go to state 29 ]
+  ! SLASH           [ shift and go to state 26 ]
+
+
+state 32
+
+    (15) expr -> expr PLUS expr .
+    (15) expr -> expr . PLUS expr
+    (16) expr -> expr . MINUS expr
+    (17) expr -> expr . ASTERISK expr
+    (18) expr -> expr . SLASH expr
+
+    RBRACE          reduce using rule 15 (expr -> expr PLUS expr .)
+    LPAR            reduce using rule 15 (expr -> expr PLUS expr .)
+    INTEGER         reduce using rule 15 (expr -> expr PLUS expr .)
+    PLUS            reduce using rule 15 (expr -> expr PLUS expr .)
+    MINUS           reduce using rule 15 (expr -> expr PLUS expr .)
+    RPAR            reduce using rule 15 (expr -> expr PLUS expr .)
+    ASTERISK        shift and go to state 29
+    SLASH           shift and go to state 26
+
+  ! ASTERISK        [ reduce using rule 15 (expr -> expr PLUS expr .) ]
+  ! SLASH           [ reduce using rule 15 (expr -> expr PLUS expr .) ]
+  ! PLUS            [ shift and go to state 27 ]
+  ! MINUS           [ shift and go to state 28 ]
+
+
+state 33
+
+    (16) expr -> expr MINUS expr .
+    (15) expr -> expr . PLUS expr
+    (16) expr -> expr . MINUS expr
+    (17) expr -> expr . ASTERISK expr
+    (18) expr -> expr . SLASH expr
+
+    RBRACE          reduce using rule 16 (expr -> expr MINUS expr .)
+    LPAR            reduce using rule 16 (expr -> expr MINUS expr .)
+    INTEGER         reduce using rule 16 (expr -> expr MINUS expr .)
+    PLUS            reduce using rule 16 (expr -> expr MINUS expr .)
+    MINUS           reduce using rule 16 (expr -> expr MINUS expr .)
+    RPAR            reduce using rule 16 (expr -> expr MINUS expr .)
+    ASTERISK        shift and go to state 29
+    SLASH           shift and go to state 26
+
+  ! ASTERISK        [ reduce using rule 16 (expr -> expr MINUS expr .) ]
+  ! SLASH           [ reduce using rule 16 (expr -> expr MINUS expr .) ]
+  ! PLUS            [ shift and go to state 27 ]
+  ! MINUS           [ shift and go to state 28 ]
+
+
+state 34
+
+    (17) expr -> expr ASTERISK expr .
+    (15) expr -> expr . PLUS expr
+    (16) expr -> expr . MINUS expr
+    (17) expr -> expr . ASTERISK expr
+    (18) expr -> expr . SLASH expr
+
+    RBRACE          reduce using rule 17 (expr -> expr ASTERISK expr .)
+    LPAR            reduce using rule 17 (expr -> expr ASTERISK expr .)
+    INTEGER         reduce using rule 17 (expr -> expr ASTERISK expr .)
+    PLUS            reduce using rule 17 (expr -> expr ASTERISK expr .)
+    MINUS           reduce using rule 17 (expr -> expr ASTERISK expr .)
+    ASTERISK        reduce using rule 17 (expr -> expr ASTERISK expr .)
+    SLASH           reduce using rule 17 (expr -> expr ASTERISK expr .)
+    RPAR            reduce using rule 17 (expr -> expr ASTERISK expr .)
+
+  ! PLUS            [ shift and go to state 27 ]
+  ! MINUS           [ shift and go to state 28 ]
+  ! ASTERISK        [ shift and go to state 29 ]
+  ! SLASH           [ shift and go to state 26 ]
+

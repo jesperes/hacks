@@ -1,0 +1,31 @@
+Aliens - Återkomsten	Aliens	James Cameron		1986	2	DVD	15 år	1	Science Fiction	DVD	
+Batman		Tim Burton	121	1989	2	?	15 år	1	Action	DVD	
+Deep Blue Sea		Renny Harlin	101	1999	2	anamorphic 2.35	15 år	1	Action	DVD	
+Dr. No		Terence Young	110	1962	1	Widescreen	PG	1	Action	DVD	
+Hero		Zhang Yimou	95	2002	2	anamorphic 2.35	11 år		Action/Drama	DVD	
+Hitta Nemo	Finding Nemo		96	2003		anamorphic 1.78	7 år	2	Animated	DVD	
+I Am Sam		Jessie Nelson	125	2001	2	anamorphic 1.85	7 år	1	Drama	DVD	
+Lejonkungen	The Lion King		85	1994	2	anamorphic 1.66	7 år	2	Animated	DVD	
+Lethal Weapon 4		Richard Donner	122	1998	2	anamorphic 2.35	15 år	1	Action, Komedi	DVD	
+Matrix Reloaded		The Wachowski Brothers	132	2003	2	anamorphic 2.40	11 år	2	Science Fiction, Action	DVD	
+Matrix Revolutions		The Wachowski Brothers	124	2003	2	anamorphic 2.40	15 år	2	Science Fiction, Action	DVD	
+Mimic		Guillermo Del Toro	105		2		15 år	1	Rysare	DVD	
+Mission: Impossible - 2		John Woo	123	2000	1	anamorphic 2.35	PG-13	1	Action	DVD	
+Monsters, Inc.			88	2001		anamorphic 1.78	7 år	1	Animated	DVD	
+Nasses STORA Film	Piglet's BIG Movie		72	2002	2	anamorphic 1.66	Barntillåten		Barn, Animerat	DVD	
+När Lammen Tystnar	Silence of the Lambs	Jonathan Demme	113	1990	2	anamorphic 1.85	15 år	1	Thriller	DVD	
+On Her Majesty's Secret Service		Peter Hunt	142	1969	1	Widescreen	PG	1	Action	DVD	
+Red Dragon		Brett Ratner	120	2002	2	anamorphic 2.35	15 år	2	Thriller	DVD	
+Samsara			140			anamorphic 1.85				DivX	
+Star Wars - Episode II		George Lucas	137	2002		anamorphic 2.35				DivX, DVD	
+Star Wars - Episode IV										DivX, DVD	
+Star Wars - Episode V										DivX, DVD	
+Star Wars - Episode VI										DivX, DVD	
+Starship Troopers		Paul Verhoeven	125	1997	2	anamorphic 1.85	15 år	1	Science Fiction, Action	DVD	
+The Blues Brothers										DivX	
+The Green Mile			188	1999		anamorphic 1.85				DivX	
+The Matrix		The Wachowski Brothers	131	1999	2	anamorphic 2.35 (?)	15 år	1	Science Fiction, Action	DVD	
+The Spy Who Loved Me		Lewis Gilbert	125	1977	1	Widescreen	PG	1	Action	DVD	
+Time Bandits		Terry Gilliam	112	1981	2	Letterbox 1.85 (?)	8 år	1	Komedi	DVD	
+Vanilla Sky			130			anamorphic 1.85				DivX	
+Åter Till Cold Mountain	Cold Mountain	Anthony Minghella	148	2003	2	anamorphic 2.35	11 år	1	Drama	DVD	

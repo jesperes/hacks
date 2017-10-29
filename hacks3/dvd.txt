@@ -1,0 +1,109 @@
+# Title:
+# Original_Title:
+# Director:
+# Actors:
+# Soundtrack:
+# Length:
+# Year:
+# Region:
+# Format:
+# Rating:
+# Audio:
+# Discs:
+# Category:
+# Notes:
+
+Title: Mission: Impossible - 2
+Director: John Woo
+Actors: Tom Cruise, Thandie Newton, Dougray Scott, Anthony Hopkins
+Soundtrack: Hans Zimmer
+Length: 123
+Year: 2000
+Region: 1
+Format: Anamorphic 2.35
+Rating: PG-13
+Audio: English, French
+Discs: 1
+Category: Action
+Notes: Ej svensk text
+
+Title: Matrix Reloaded
+Director: The Wachowski Brothers
+Actors: Keanu Reeves, Lawrence Fishburne, Carrie-Anne Moss, Hugo Weaving
+Soundtrack: Don Davis
+Length: 132
+Year: 2003
+Format: Anamorphic 2.40
+Region: 2
+Discs: 2
+Category: Action
+Rating: 11 år
+
+Title: Hero
+Director: Zhang Yimou
+Actors: Jet Li, Tony Leung Chiu-Wai, Maggie Cheung Man-Yuk
+Soundtrack: Tan Dun
+Length: 95
+Year: 2002
+Region: 2
+Audio: Kinesiska
+Category: Action/Drama
+Format: Anamorphic 2.35
+Rating: 11 år
+
+Title: Monsters, Inc.
+Category: Animated
+Length: 88
+Rating: 7 år
+Year: 2001
+Discs: 1
+Format: Anamorphic 1.78
+
+Title: Hitta Nemo
+Original_Title: Finding Nemo
+Category: Animated
+Rating: 7 år
+Year: 2003
+Length: 96
+Format: Anamorphic 1.78
+Discs: 2
+
+Title: När Lammen Tystnar
+Original_Title: Silence of the Lambs
+Discs: 2
+Year: 1990
+Actors: Anthony Hopkins, Jodie Foster, Scott Glenn, Ted Levine
+Director: Jonathan Demme
+Soundtrack: Howard Shore
+Format: Anamorphic 1.85
+Length: 113
+Region: 2
+Rating: 15 år
+Discs: 1
+Category: Thriller
+
+Title: Red Dragon
+Director: Brett Ratner
+Actors: Anthony Hopkins, Edward Norton, Ralph Fiennes, Harvey Keitel, Emily Watson, Mary-Louise Parker, Philip Seymour Hoffman
+Soundtrack: Danny Elfman
+Length: 120
+Year: 2002
+Region: 2
+Format: Anamorphic 2.35
+Rating: 15 år
+Discs: 2
+Category: Thriller
+
+Title: Deep Blue Sea
+Director: Renny Harlin
+Actors: Thomas Jane, LL Cool J, Michael Rapaport, Stellan Skarsgård, Samuel L. Jackson, Jaqueline McKenzie
+Soundtrack: Trevor Rabin
+Length: 101
+Year: 1999
+Region: 2
+Format: Anamorphic 2.35
+Rating: 15 år
+Discs: 1
+Category: Action
+
+
