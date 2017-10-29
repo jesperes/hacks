@@ -1,0 +1,26 @@
+- Usability issues -
+
+* In general, difficult to get started...
+* Prompt the user to define a runtime if one isn't found
+* Erlang console visible by default
+* Right-click on *.erl files (and other elements (functions, modules, etc.)) and select "Run/Debug as"
+* How do I compile/run my code. Should not have to resort to console (the console
+  should really not have to be used.)
+* "Tracer" tab in erlang console not very useful, difficult to see contents of
+  columns, unclear what it all means.
+* Erlang console too cluttered (tabs, toolbar, split output/input view). Plain terminal is enough.
+* Sender/leader button.
+* No tooltips
+* Process list view doesn't show anything unless "i" button is pressed. Should be automatic.
+* Live expressions doesn't update ("rpc failed", but no further diagnostics)
+* Process list view: sort on columns
+* Syntax coloring doesn't show immediately. Neither does the outline view.
+* Outline view shouldn't autoexpand children. I think.
+
+- Improvements -
+
+* Content-assist
+* Refactoring
+
+- Bugs -
+* Clicking in outline view on a function selects, but selection doesn't really match the function.
