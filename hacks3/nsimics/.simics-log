@@ -1,9 +1,0 @@
-# '.simics-log':
-# Simics simics-2.3-internal (Thu Dec 23 15:52:34 CET 2004)
-#
-# Note: Simics logs all commands, even incorrect ones and comments.
-# This file can be used as a script using the -x flag, in which
-# case there will be multiple headers. You can override the creation
-# of this file with the -no-log flag.
-#
-# Running on morpheus.hq.vtech (Linux 2.6.9 i686)

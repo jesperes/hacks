@@ -1,5 +1,0 @@
-# -*- python -*-
-
-env = Environment()
-env.Program("prog", "foo.S")
-
