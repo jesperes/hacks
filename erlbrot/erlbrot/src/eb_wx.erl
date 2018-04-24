@@ -23,7 +23,11 @@
 
 -define(SERVER, ?MODULE).
 
--record(state, {request_count = 0}).
+-record(state, {
+	  request_count = 0,
+	  wx,
+	  win
+	 }).
 
 %%%===================================================================
 %%% API
@@ -62,8 +66,13 @@ get_count() ->
 %% @end
 %%--------------------------------------------------------------------
 init([]) ->
+    error_logger:info_msg("eb_wx starting...~n"),
     process_flag(trap_exit, true),
-    {ok, #state{}}.
+    
+    {ok, #state{
+	    wx = wx:new(),
+	    win = wxWindow:new()
+	   }}.
 
 %%--------------------------------------------------------------------
 %% @private
@@ -126,7 +135,9 @@ handle_info(_Info, State) ->
 %% @spec terminate(Reason, State) -> void()
 %% @end
 %%--------------------------------------------------------------------
-terminate(_Reason, _State) ->
+terminate(_Reason, State) ->
+    ok = wx:destroy(State#state.wx),
+    ok = wxWindow:destroy(State#state.win),
     ok.
 
 %%--------------------------------------------------------------------
