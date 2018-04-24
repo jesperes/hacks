@@ -31,32 +31,54 @@ function print_header()
 function print_progress()
 {
     cols=$(tput cols)
-    str=$(echo "Scanning: ${f}" | cut -b-$cols)
+    progress=$((100*counter/numdirs))
+    str=$(echo "Scanning (${progress}%): ${f}" | cut -b-$cols)
     tput sc # save cursor
-    tput el # clear to EOL
     echo -n $str
+    tput el # clear to EOL
     tput rc # restore cursor
 }
 
-find -type d | while read f; do
-    pushd . >/dev/null
-    cd "$f"
+function reset()
+{
+    echo
+    tput sgr0
+    tput cnorm
+}
 
+trap reset INT
+
+tput civis
+
+find_args="-path *.svn -o -path *.git"
+dirs=$(find -type d $find_args 2>/dev/null)
+
+numdirs=$(echo "$dirs" | wc -l)
+counter=0
+
+echo "Scanning $numdirs directories..."
+echo "$dirs" | while read f; do
+    # echo $f
+    pushd . >/dev/null
+    counter=$((counter + 1))
+
+    d="$(dirname "$f")"
+    cd $d
     if [ -d .svn ]; then
-	print_progress $f
+	print_progress $d
 	info="$(svn status -q)"
 	if [ x"$info" != x ]; then
 	    url="$(svn info | sed -ne 's/^URL: \(.*\)/\1/p')"
-	    print_header $f $url
+	    print_header $d $url
 	    svn status -q
 	    $if_verbose svn diff | colordiff
 	fi
     elif [ -d .git ]; then
-	print_progress $f
+	print_progress $d
 	info="$(git status -s)"
 	if [ x"$info" != x ]; then
 	    url="$(git remote get-url origin)"
-	    print_header $f $url
+	    print_header $d $url
 	    git status -s
 	    $if_verbose git diff
 	fi
@@ -64,3 +86,6 @@ find -type d | while read f; do
     
     popd >/dev/null
 done
+
+tput cnorm
+
