@@ -28,11 +28,22 @@ function print_header()
     echo "$(tput setaf 6)$wc$(tput sgr0) checked out from $(tput setaf 2)$url$(tput sgr0)"
 }
 
+function print_progress()
+{
+    cols=$(tput cols)
+    str=$(echo "Scanning: ${f}" | cut -b-$cols)
+    tput sc # save cursor
+    tput el # clear to EOL
+    echo -n $str
+    tput rc # restore cursor
+}
+
 find -type d | while read f; do
     pushd . >/dev/null
     cd "$f"
-    
+
     if [ -d .svn ]; then
+	print_progress $f
 	info="$(svn status -q)"
 	if [ x"$info" != x ]; then
 	    url="$(svn info | sed -ne 's/^URL: \(.*\)/\1/p')"
@@ -41,6 +52,7 @@ find -type d | while read f; do
 	    $if_verbose svn diff | colordiff
 	fi
     elif [ -d .git ]; then
+	print_progress $f
 	info="$(git status -s)"
 	if [ x"$info" != x ]; then
 	    url="$(git remote get-url origin)"
